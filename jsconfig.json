@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".yarn ",
+    "paths": {
+      "@/*": ["./@*"],
+      "@/components": ["./components/*"],
+      "@/lib": ["./lib/*"]
+    }
+  }
+}
