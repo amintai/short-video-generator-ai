@@ -7,13 +7,30 @@ const scriptData =
 const FILE_URL =
   "https://firebasestorage.googleapis.com/v0/b/ai-short-video-generator-a99a3.firebasestorage.app/o/ai-short-video-files%2F0f9dc104-2080-45d8-a95d-416cff427cf9.mp3?alt=media&token=ca33c46e-e062-49a4-8ea9-f52e1a72dfb3";
 
+const SCRIPT_JSON = [
+  {
+    imagePrompt:
+      "A close-up of a comic book page with vibrant colors and dynamic action, showcasing a superhero mid-leap, their cape billowing behind them.",
+    contentText:
+      "Open on a comic book page. Vibrant colors, dynamic action. A superhero leaps through the air, cape billowing behind them. ",
+  },
+  {
+    imagePrompt:
+      "A child sitting on a living room floor, engrossed in reading a comic book, their eyes wide with wonder and excitement.",
+    contentText:
+      "Cut to a child, eyes wide, engrossed in a comic book. They're surrounded by colorful panels. ",
+  },
+];
+
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
   const [isAPILoading, setAPILoading] = useState(false);
   const [videoScript, setVideoScript] = useState("");
   const [audioFileUrl, setAudioFileUrl] = useState("");
   const [captions, setCaptions] = useState([]);
+  const [imageList, setImageList] = useState([]);
 
+  console.log("videoScript", videoScript);
   const onHandleInputChange = (fieldName, fieldValue) => {
     setFormData((state) => ({
       ...state,
@@ -38,7 +55,8 @@ const useCreateNewVideo = () => {
   const handleCreateVideo = () => {
     // getVideoScript();
     // generateAudioFile(scriptData);
-    generateAudioCaption(FILE_URL);
+    // generateAudioCaption(FILE_URL);
+    generateImage();
   };
 
   const generateAudioFile = async (data) => {
@@ -74,14 +92,32 @@ const useCreateNewVideo = () => {
         audioFileUrl: fileUrl,
       })
       .then((res) => {
-        setAPILoading(false);
         setCaptions(res.data.result);
+        generateImage();
       })
       .catch((err) => {
         setAPILoading(false);
       });
   };
 
+  const generateImage = async () => {
+    let images = [];
+    SCRIPT_JSON.forEach(async (element) => {
+      await axios
+        .post("/api/generate-image", {
+          prompt: element?.imagePrompt,
+        })
+        .then((res) => {
+          console.log("RES", res);
+          setAPILoading(false);
+          images.push(res.data.result);
+        })
+        .catch((e) => {
+          setAPILoading(false);
+        });
+    });
+    setImageList(images);
+  };
   return [
     { formData, isAPILoading, videoScript, audioFileUrl, captions },
     {
