@@ -70,24 +70,18 @@ const useCreateNewVideo = () => {
           videoScript: res.data.result,
         }));
         setVideoScript(res.data.result);
-        generateAudioFile(res.data.result.scenes);
+        generateAudioFile(res.data.result.stories);
       });
-    // setAPILoading(false);
   };
 
   const handleCreateVideo = () => {
     getVideoScript();
-    // generateAudioFile(scriptData);
-    // generateAudioCaption(FILE_URL);
-    // generateImage();
   };
 
   //! Generate Audio Script
   const generateAudioFile = async (videoScriptData) => {
     let script = "";
     const id = uuid4();
-
-    // setAPILoading(true);
 
     videoScriptData.forEach((item) => {
       script = script + item.contentText + " ";
@@ -104,14 +98,10 @@ const useCreateNewVideo = () => {
     }));
     setAudioFileUrl(res.data.url);
     generateAudioCaption(res.data.url, videoScriptData);
-
-    // setAPILoading(false);
   };
 
   //! Generate Audio Captions
   const generateAudioCaption = async (fileUrl, videoScriptData) => {
-    // setAPILoading(true);
-
     await axios
       .post("/api/generate-caption", {
         audioFileUrl: fileUrl,
@@ -152,6 +142,10 @@ const useCreateNewVideo = () => {
     setAPILoading(false);
   };
 
+  const handleCancelVideoPlayerCb = () => {
+    setPlayVideo(false);
+  };
+
   return [
     {
       formData,
@@ -161,6 +155,7 @@ const useCreateNewVideo = () => {
       captions,
       playVideo,
       videoId,
+      videoData,
     },
     {
       onHandleInputChange,
@@ -168,6 +163,7 @@ const useCreateNewVideo = () => {
       handleCreateVideo,
       generateAudioFile,
       generateAudioCaption,
+      handleCancelVideoPlayerCb,
     },
   ];
 };

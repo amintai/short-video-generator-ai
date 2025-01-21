@@ -1,12 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import SelectTopic from "./_components/SelectTopic";
 import SelectStyle from "./_components/SelectStyle";
 import SelectDuration from "./_components/SelectDuration";
 import { Button } from "../../../components/ui/button";
-import axios from "axios";
 import CustomLoading from "./_components/CustomLoading";
-import { v4 as uuid4 } from "uuid";
 import useCreateNewVideo from "./hooks/useCreateNewVideo";
 import PlayerDialog from "../_components/PlayerDialog";
 
@@ -20,6 +18,7 @@ const CreateNew = () => {
       captions,
       playVideo,
       videoId,
+      videoData,
     },
     {
       onHandleInputChange,
@@ -27,6 +26,7 @@ const CreateNew = () => {
       handleCreateVideo,
       generateAudioFile,
       generateAudioCaption,
+      handleCancelVideoPlayerCb,
     },
   ] = useCreateNewVideo();
 
@@ -49,7 +49,13 @@ const CreateNew = () => {
       <CustomLoading loading={isAPILoading} />
 
       {playVideo ? (
-        <PlayerDialog playVideo={playVideo} videoId={videoId} />
+        <PlayerDialog
+          handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
+          playVideo={playVideo}
+          videoId={videoId}
+          isLoading={isAPILoading}
+          videoData={videoData}
+        />
       ) : null}
     </div>
   );
