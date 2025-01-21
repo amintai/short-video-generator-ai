@@ -2,6 +2,9 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { v4 as uuid4 } from "uuid";
 import { VideoDataContext } from "../../../_context/VideoDataContext";
+import { db } from "../../../../configs/db";
+import { useUser } from "@clerk/nextjs";
+import { VideoData } from "../../../../configs/schema";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -10,6 +13,8 @@ const useCreateNewVideo = () => {
   const [audioFileUrl, setAudioFileUrl] = useState("");
   const [captions, setCaptions] = useState([]);
   const [imageList, setImageList] = useState([]);
+
+  const { user } = useUser();
 
   const { videoData, setVideoData } = useContext(VideoDataContext);
 
@@ -21,8 +26,29 @@ const useCreateNewVideo = () => {
   };
 
   useEffect(() => {
-    console.log("videoData", videoData);
+    if (Object.keys(videoData).length === 4) {
+      saveVideoData(videoData);
+    }
   }, [videoData]);
+
+  const saveVideoData = async (videoData) => {
+    setAPILoading(true);
+
+    const result = await db
+      .insert(VideoData)
+      .values({
+        script: videoData?.videoScript,
+        audioFileUrl: videoData?.audioFileUrl,
+        captions: videoData?.captions,
+        imageList: videoData?.imageList,
+        createdBy: user?.primaryEmailAddress.emailAddress,
+      })
+      .returning({
+        id: VideoData?.id,
+      });
+
+    setAPILoading(false);
+  };
 
   //! Generate Video Script
   const getVideoScript = async () => {
@@ -70,7 +96,6 @@ const useCreateNewVideo = () => {
       ...state,
       audioFileUrl: res.data.url,
     }));
-    console.log("AUDO FILE", res);
     setAudioFileUrl(res.data.url);
     generateAudioCaption(res.data.url, videoScriptData);
 
@@ -86,7 +111,6 @@ const useCreateNewVideo = () => {
         audioFileUrl: fileUrl,
       })
       .then((res) => {
-        console.log("HERE IMAGES", res);
         setVideoData((state) => ({
           ...state,
           captions: res.data.result,
