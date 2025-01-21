@@ -14,6 +14,9 @@ const useCreateNewVideo = () => {
   const [captions, setCaptions] = useState([]);
   const [imageList, setImageList] = useState([]);
 
+  const [playVideo, setPlayVideo] = useState(false);
+  const [videoId, setVideoId] = useState(1);
+
   const { user } = useUser();
 
   const { videoData, setVideoData } = useContext(VideoDataContext);
@@ -31,6 +34,7 @@ const useCreateNewVideo = () => {
     }
   }, [videoData]);
 
+  //! Save Video Data To DB
   const saveVideoData = async (videoData) => {
     setAPILoading(true);
 
@@ -47,6 +51,8 @@ const useCreateNewVideo = () => {
         id: VideoData?.id,
       });
 
+    setVideoId(result[0].id);
+    setPlayVideo(true);
     setAPILoading(false);
   };
 
@@ -147,7 +153,15 @@ const useCreateNewVideo = () => {
   };
 
   return [
-    { formData, isAPILoading, videoScript, audioFileUrl, captions },
+    {
+      formData,
+      isAPILoading,
+      videoScript,
+      audioFileUrl,
+      captions,
+      playVideo,
+      videoId,
+    },
     {
       onHandleInputChange,
       getVideoScript,

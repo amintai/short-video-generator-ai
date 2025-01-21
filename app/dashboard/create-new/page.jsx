@@ -8,10 +8,19 @@ import axios from "axios";
 import CustomLoading from "./_components/CustomLoading";
 import { v4 as uuid4 } from "uuid";
 import useCreateNewVideo from "./hooks/useCreateNewVideo";
+import PlayerDialog from "../_components/PlayerDialog";
 
 const CreateNew = () => {
   const [
-    { formData, isAPILoading, videoScript, audioFileUrl, captions },
+    {
+      formData,
+      isAPILoading,
+      videoScript,
+      audioFileUrl,
+      captions,
+      playVideo,
+      videoId,
+    },
     {
       onHandleInputChange,
       getVideoScript,
@@ -38,6 +47,10 @@ const CreateNew = () => {
       </div>
 
       <CustomLoading loading={isAPILoading} />
+
+      {playVideo ? (
+        <PlayerDialog playVideo={playVideo} videoId={videoId} />
+      ) : null}
     </div>
   );
 };
