@@ -3,9 +3,6 @@ import { NextResponse } from "next/server";
 import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-const fs = require("fs");
-const util = require("util");
-
 const client = new textToSpeech.TextToSpeechClient({
   apiKey: process.env.GOOGLE_API_KEY,
 });

@@ -1,26 +1,7 @@
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { v4 as uuid4 } from "uuid";
-
-const scriptData =
-  "Scene 1: Even in the darkest moments, there is a spark of potential within you. It's time to ignite it. Scene 2: The path to success may be challenging, but every step takes you closer to your goal. Scene 3: Cultivate your talents and watch them bloom into something truly beautiful. Scene 4: Let go of your doubts and fears; your potential will set you free and take you to new heights. Scene 5: We accomplish more together than we do alone. Unite with purpose, and build something greater. Scene 6: The universe is full of possibilities; believe in your dreams and reach for the stars. Scene 7: Let your inner light shine; be a guiding beacon for yourself and others. Scene 8: Listen to your heart, follow your passions and always believe in the power of who you are. ";
-const FILE_URL =
-  "https://firebasestorage.googleapis.com/v0/b/ai-short-video-generator-a99a3.firebasestorage.app/o/ai-short-video-files%2F0f9dc104-2080-45d8-a95d-416cff427cf9.mp3?alt=media&token=ca33c46e-e062-49a4-8ea9-f52e1a72dfb3";
-
-const SCRIPT_JSON = [
-  {
-    imagePrompt:
-      "A close-up of a comic book page with vibrant colors and dynamic action, showcasing a superhero mid-leap, their cape billowing behind them.",
-    contentText:
-      "Open on a comic book page. Vibrant colors, dynamic action. A superhero leaps through the air, cape billowing behind them. ",
-  },
-  {
-    imagePrompt:
-      "A child sitting on a living room floor, engrossed in reading a comic book, their eyes wide with wonder and excitement.",
-    contentText:
-      "Cut to a child, eyes wide, engrossed in a comic book. They're surrounded by colorful panels. ",
-  },
-];
+import { VideoDataContext } from "../../../_context/VideoDataContext";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -30,7 +11,8 @@ const useCreateNewVideo = () => {
   const [captions, setCaptions] = useState([]);
   const [imageList, setImageList] = useState([]);
 
-  console.log("videoScript", videoScript);
+  const { videoData, setVideoData } = useContext(VideoDataContext);
+
   const onHandleInputChange = (fieldName, fieldValue) => {
     setFormData((state) => ({
       ...state,
@@ -38,86 +20,108 @@ const useCreateNewVideo = () => {
     }));
   };
 
+  useEffect(() => {
+    console.log("videoData", videoData);
+  }, [videoData]);
+
+  //! Generate Video Script
   const getVideoScript = async () => {
     setAPILoading(true);
-    const propmt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not include scene 1, 2 ,3 as Start of paragraph.`;
+    const propmt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
     await axios
       .post("/api/get-video-script", {
         propmt: propmt,
       })
       .then((res) => {
+        setVideoData((state) => ({
+          ...state,
+          videoScript: res.data.result,
+        }));
         setVideoScript(res.data.result);
         generateAudioFile(res.data.result.scenes);
       });
-    setAPILoading(false);
+    // setAPILoading(false);
   };
 
   const handleCreateVideo = () => {
-    // getVideoScript();
+    getVideoScript();
     // generateAudioFile(scriptData);
     // generateAudioCaption(FILE_URL);
-    generateImage();
+    // generateImage();
   };
 
-  const generateAudioFile = async (data) => {
-    // let script = "";
+  //! Generate Audio Script
+  const generateAudioFile = async (videoScriptData) => {
+    let script = "";
     const id = uuid4();
 
-    setAPILoading(true);
+    // setAPILoading(true);
 
-    // data.forEach((item) => {
-    //   script = script + item.contentText + " ";
-    // });
-    // console.log(script);
+    videoScriptData.forEach((item) => {
+      script = script + item.contentText + " ";
+    });
 
-    await axios
-      .post("/api/generate-audio", {
-        text: data,
-        id: id,
-      })
-      .then((res) => {
-        setAPILoading(false);
-        setAudioFileUrl(res.data.url);
-      })
-      .catch((e) => {
-        setAPILoading(false);
-      });
+    const res = await axios.post("/api/generate-audio", {
+      text: script,
+      id: id,
+    });
+
+    setVideoData((state) => ({
+      ...state,
+      audioFileUrl: res.data.url,
+    }));
+    console.log("AUDO FILE", res);
+    setAudioFileUrl(res.data.url);
+    generateAudioCaption(res.data.url, videoScriptData);
+
+    // setAPILoading(false);
   };
 
-  const generateAudioCaption = async (fileUrl) => {
-    setAPILoading(true);
+  //! Generate Audio Captions
+  const generateAudioCaption = async (fileUrl, videoScriptData) => {
+    // setAPILoading(true);
 
     await axios
       .post("/api/generate-caption", {
         audioFileUrl: fileUrl,
       })
       .then((res) => {
+        console.log("HERE IMAGES", res);
+        setVideoData((state) => ({
+          ...state,
+          captions: res.data.result,
+        }));
         setCaptions(res.data.result);
-        generateImage();
+        res.data.result && generateImage(videoScriptData);
       })
       .catch((err) => {
         setAPILoading(false);
+        console.log("Error:", err);
       });
   };
 
-  const generateImage = async () => {
+  //! Generate Images
+  const generateImage = async (scriptData) => {
     let images = [];
-    SCRIPT_JSON.forEach(async (element) => {
-      await axios
-        .post("/api/generate-image", {
+
+    for (const element of scriptData) {
+      try {
+        const res = await axios.post("/api/generate-image", {
           prompt: element?.imagePrompt,
-        })
-        .then((res) => {
-          console.log("RES", res);
-          setAPILoading(false);
-          images.push(res.data.result);
-        })
-        .catch((e) => {
-          setAPILoading(false);
         });
-    });
+        images.push(res.data.result);
+      } catch (e) {
+        console.log("Error:", e);
+      }
+    }
+    setVideoData((state) => ({
+      ...state,
+      imageList: images,
+    }));
     setImageList(images);
+    setAPILoading(false);
   };
+
   return [
     { formData, isAPILoading, videoScript, audioFileUrl, captions },
     {
