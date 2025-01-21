@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Audio,
   Img,
+  interpolate,
   Sequence,
   useCurrentFrame,
   useVideoConfig,
@@ -18,7 +19,7 @@ const RemotionVideo = ({
   const frame = useCurrentFrame();
 
   const getDurationFrames = () => {
-    let endTimeStamp = captions[captions.length - 1]?.end;
+    let endTimeStamp = captions?.[captions.length - 1]?.end;
     setDurationInFrame((endTimeStamp / 1000) * fps);
 
     return (endTimeStamp / 1000) * fps;
@@ -39,11 +40,22 @@ const RemotionVideo = ({
       }}
     >
       {imageList?.map((item, index) => {
+        const startTime = (index * getDurationFrames()) / imageList?.length;
+        const duration = getDurationFrames();
+
+        const scale = (index) => {
+          return interpolate(
+            frame,
+            [startTime, startTime + duration / 2, startTime + duration],
+            index % 2 == 0 ? [1, 1.8, 1] : [1.8, 1, 1.8],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+          ); // Zoom In and Zoom Out
+        };
         return (
           <>
             <Sequence
               key={Math.random()}
-              from={(index * getDurationFrames()) / imageList.length}
+              from={startTime}
               durationInFrames={getDurationFrames()}
             >
               <AbsoluteFill
@@ -58,6 +70,7 @@ const RemotionVideo = ({
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
+                    transform: `scale(${scale(index)})`,
                   }}
                 />
                 <AbsoluteFill
