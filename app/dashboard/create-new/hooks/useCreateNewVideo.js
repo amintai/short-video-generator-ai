@@ -17,6 +17,8 @@ const useCreateNewVideo = () => {
   const [playVideo, setPlayVideo] = useState(false);
   const [videoId, setVideoId] = useState(1);
 
+  const [videoContent, setVideoContent] = useState();
+
   const { user } = useUser();
 
   const { videoData, setVideoData } = useContext(VideoDataContext);
@@ -50,6 +52,9 @@ const useCreateNewVideo = () => {
       .returning({
         id: VideoData?.id,
       });
+
+    setVideoContent(videoData);
+    setVideoData({});
 
     setVideoId(result[0].id);
     setPlayVideo(true);
@@ -159,6 +164,7 @@ const useCreateNewVideo = () => {
       playVideo,
       videoId,
       videoData,
+      videoContent,
     },
     {
       onHandleInputChange,

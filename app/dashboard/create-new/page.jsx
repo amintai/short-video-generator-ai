@@ -19,6 +19,7 @@ const CreateNew = () => {
       playVideo,
       videoId,
       videoData,
+      videoContent,
     },
     {
       onHandleInputChange,
@@ -54,7 +55,7 @@ const CreateNew = () => {
           playVideo={playVideo}
           videoId={videoId}
           isLoading={isAPILoading}
-          videoData={videoData}
+          videoData={videoContent}
         />
       ) : null}
     </div>
