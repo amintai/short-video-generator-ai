@@ -52,7 +52,7 @@ const RemotionVideo = ({
           ); // Zoom In and Zoom Out
         };
         return (
-          <>
+          <div key={index}>
             <Sequence
               key={Math.random()}
               from={startTime}
@@ -88,7 +88,7 @@ const RemotionVideo = ({
                 </AbsoluteFill>
               </AbsoluteFill>
             </Sequence>
-          </>
+          </div>
         );
       })}
 

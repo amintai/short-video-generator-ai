@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { storage } from "../../../configs/firebaseConfig";
+import { TEMP_IMAGES } from "../../../lib/imagesArray";
 
 export async function POST(req) {
   try {
@@ -39,7 +40,7 @@ export async function POST(req) {
     const base64Image =
       "data:image/png;base64," +
       (await convertImage(
-        "https://fastly.picsum.photos/id/172/536/354.jpg?hmac=vGTqZcarPIEk4mDaK426APQYPgDIfPuISnvISC_-cAU"
+        TEMP_IMAGES[Math.floor(Math.random() * TEMP_IMAGES.length)]
       ));
 
     const fileName = "ai-short-video-files/" + Date.now() + ".png";

@@ -70,7 +70,10 @@ const useCreateNewVideo = () => {
           videoScript: res.data.result,
         }));
         setVideoScript(res.data.result);
-        generateAudioFile(res.data.result.stories);
+
+        let key = Object.keys(res.data.result);
+
+        generateAudioFile(res.data.result[key]);
       });
   };
 
