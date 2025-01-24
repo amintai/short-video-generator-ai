@@ -13,11 +13,15 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+if (!publishableKey) {
+  throw new Error("Missing Clerk publishable key");
+}
+
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-    >
+    <ClerkProvider publishableKey={publishableKey}>
       <html lang="en">
         <body className={outfit.className}>
           <Provider>{children}</Provider>
