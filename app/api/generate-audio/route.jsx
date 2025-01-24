@@ -4,7 +4,7 @@ import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const client = new textToSpeech.TextToSpeechClient({
-  apiKey: process.env.GOOGLE_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
 });
 
 console.log("client", client);

@@ -6,7 +6,7 @@ export async function POST(req) {
     const { audioFileUrl } = await req.json();
 
     const client = new AssemblyAI({
-      apiKey: process.env.CAPTION_API,
+      apiKey: process.env.NEXT_PUBLIC_CAPTION_API,
     });
 
     const FILE_URL = audioFileUrl;
