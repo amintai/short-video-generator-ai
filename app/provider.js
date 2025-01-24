@@ -9,15 +9,11 @@ import React, { useEffect } from "react";
 const Provider = ({ children }) => {
   const { user } = useUser();
 
-  console.log(user);
-
   const isNewUser = async () => {
     const result = await db
       .select()
       .from(Users)
       .where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
-
-    console.log("RESULT", result);
 
     if (!result.length) {
       await db.insert(Users).values({

@@ -3,9 +3,6 @@ import { NextResponse } from "next/server";
 import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-const fs = require("fs");
-const util = require("util");
-
 const client = new textToSpeech.TextToSpeechClient({
   apiKey: process.env.GOOGLE_API_KEY,
 });
@@ -39,11 +36,9 @@ export async function POST(req) {
 
   const downloadUrl = await getDownloadURL(storageRef);
 
-  console.log("downloadUrl", downloadUrl);
   //! To save audio in local
   //   const writeFile = util.promisify(fs.writeFile);
   //   await writeFile("output.mp3", response.audioContent, "binary");
-  console.log("Audio content written to file: output.mp3");
 
   return NextResponse.json({
     Result: "Success",

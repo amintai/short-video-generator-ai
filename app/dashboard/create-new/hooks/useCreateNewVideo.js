@@ -1,11 +1,10 @@
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { v4 as uuid4 } from "uuid";
-
-const scriptData =
-  "Scene 1: Even in the darkest moments, there is a spark of potential within you. It's time to ignite it. Scene 2: The path to success may be challenging, but every step takes you closer to your goal. Scene 3: Cultivate your talents and watch them bloom into something truly beautiful. Scene 4: Let go of your doubts and fears; your potential will set you free and take you to new heights. Scene 5: We accomplish more together than we do alone. Unite with purpose, and build something greater. Scene 6: The universe is full of possibilities; believe in your dreams and reach for the stars. Scene 7: Let your inner light shine; be a guiding beacon for yourself and others. Scene 8: Listen to your heart, follow your passions and always believe in the power of who you are. ";
-const FILE_URL =
-  "https://firebasestorage.googleapis.com/v0/b/ai-short-video-generator-a99a3.firebasestorage.app/o/ai-short-video-files%2F0f9dc104-2080-45d8-a95d-416cff427cf9.mp3?alt=media&token=ca33c46e-e062-49a4-8ea9-f52e1a72dfb3";
+import { VideoDataContext } from "../../../_context/VideoDataContext";
+import { db } from "../../../../configs/db";
+import { useUser } from "@clerk/nextjs";
+import { VideoData } from "../../../../configs/schema";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -13,6 +12,16 @@ const useCreateNewVideo = () => {
   const [videoScript, setVideoScript] = useState("");
   const [audioFileUrl, setAudioFileUrl] = useState("");
   const [captions, setCaptions] = useState([]);
+  const [imageList, setImageList] = useState([]);
+
+  const [playVideo, setPlayVideo] = useState(false);
+  const [videoId, setVideoId] = useState(1);
+
+  const [videoContent, setVideoContent] = useState();
+
+  const { user } = useUser();
+
+  const { videoData, setVideoData } = useContext(VideoDataContext);
 
   const onHandleInputChange = (fieldName, fieldValue) => {
     setFormData((state) => ({
@@ -21,75 +30,149 @@ const useCreateNewVideo = () => {
     }));
   };
 
+  useEffect(() => {
+    if (Object.keys(videoData).length === 4) {
+      saveVideoData(videoData);
+    }
+  }, [videoData]);
+
+  //! Save Video Data To DB
+  const saveVideoData = async (videoData) => {
+    setAPILoading(true);
+
+    const result = await db
+      .insert(VideoData)
+      .values({
+        script: videoData?.videoScript,
+        audioFileUrl: videoData?.audioFileUrl,
+        captions: videoData?.captions,
+        imageList: videoData?.imageList,
+        createdBy: user?.primaryEmailAddress.emailAddress,
+      })
+      .returning({
+        id: VideoData?.id,
+      });
+
+    setVideoContent(videoData);
+    setVideoData({});
+
+    setVideoId(result[0].id);
+    setPlayVideo(true);
+    setAPILoading(false);
+  };
+
+  //! Generate Video Script
   const getVideoScript = async () => {
     setAPILoading(true);
-    const propmt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not include scene 1, 2 ,3 as Start of paragraph.`;
+    const propmt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
     await axios
       .post("/api/get-video-script", {
         propmt: propmt,
       })
       .then((res) => {
+        setVideoData((state) => ({
+          ...state,
+          videoScript: res.data.result,
+        }));
         setVideoScript(res.data.result);
-        generateAudioFile(res.data.result.scenes);
+
+        let key = Object.keys(res.data.result);
+
+        generateAudioFile(res.data.result[key]);
       });
-    setAPILoading(false);
   };
 
   const handleCreateVideo = () => {
-    // getVideoScript();
-    // generateAudioFile(scriptData);
-    generateAudioCaption(FILE_URL);
+    getVideoScript();
   };
 
-  const generateAudioFile = async (data) => {
-    // let script = "";
+  //! Generate Audio Script
+  const generateAudioFile = async (videoScriptData) => {
+    let script = "";
     const id = uuid4();
 
-    setAPILoading(true);
+    videoScriptData.forEach((item) => {
+      script = script + item.contentText + " ";
+    });
 
-    // data.forEach((item) => {
-    //   script = script + item.contentText + " ";
-    // });
-    // console.log(script);
+    const res = await axios.post("/api/generate-audio", {
+      text: script,
+      id: id,
+    });
 
-    await axios
-      .post("/api/generate-audio", {
-        text: data,
-        id: id,
-      })
-      .then((res) => {
-        setAPILoading(false);
-        setAudioFileUrl(res.data.url);
-      })
-      .catch((e) => {
-        setAPILoading(false);
-      });
+    setVideoData((state) => ({
+      ...state,
+      audioFileUrl: res.data.url,
+    }));
+    setAudioFileUrl(res.data.url);
+    generateAudioCaption(res.data.url, videoScriptData);
   };
 
-  const generateAudioCaption = async (fileUrl) => {
-    setAPILoading(true);
-
+  //! Generate Audio Captions
+  const generateAudioCaption = async (fileUrl, videoScriptData) => {
     await axios
       .post("/api/generate-caption", {
         audioFileUrl: fileUrl,
       })
       .then((res) => {
-        setAPILoading(false);
+        setVideoData((state) => ({
+          ...state,
+          captions: res.data.result,
+        }));
         setCaptions(res.data.result);
+        res.data.result && generateImage(videoScriptData);
       })
       .catch((err) => {
         setAPILoading(false);
+        console.log("Error:", err);
       });
   };
 
+  //! Generate Images
+  const generateImage = async (scriptData) => {
+    let images = [];
+
+    for (const element of scriptData) {
+      try {
+        const res = await axios.post("/api/generate-image", {
+          prompt: element?.imagePrompt,
+        });
+        images.push(res.data.result);
+      } catch (e) {
+        console.log("Error:", e);
+      }
+    }
+    setVideoData((state) => ({
+      ...state,
+      imageList: images,
+    }));
+    setImageList(images);
+    setAPILoading(false);
+  };
+
+  const handleCancelVideoPlayerCb = () => {
+    setPlayVideo(false);
+  };
+
   return [
-    { formData, isAPILoading, videoScript, audioFileUrl, captions },
+    {
+      formData,
+      isAPILoading,
+      videoScript,
+      audioFileUrl,
+      captions,
+      playVideo,
+      videoId,
+      videoData,
+      videoContent,
+    },
     {
       onHandleInputChange,
       getVideoScript,
       handleCreateVideo,
       generateAudioFile,
       generateAudioCaption,
+      handleCancelVideoPlayerCb,
     },
   ];
 };
