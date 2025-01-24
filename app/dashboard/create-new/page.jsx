@@ -17,7 +17,6 @@ const CreateNew = () => {
       audioFileUrl,
       captions,
       playVideo,
-      videoId,
       videoData,
       videoContent,
     },
@@ -53,7 +52,6 @@ const CreateNew = () => {
         <PlayerDialog
           handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
           playVideo={playVideo}
-          videoId={videoId}
           isLoading={isAPILoading}
           videoData={videoContent}
         />

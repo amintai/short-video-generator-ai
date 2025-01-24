@@ -45,7 +45,6 @@ const VideoList = ({ videoList }) => {
         <PlayerDialog
           handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
           playVideo={openPlayDialog}
-          videoId={videoId}
           isLoading={isLoading}
           videoData={videoData}
         />

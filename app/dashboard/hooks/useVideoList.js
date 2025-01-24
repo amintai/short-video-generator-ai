@@ -21,9 +21,9 @@ const useVideoList = () => {
     const result = await db
       .select()
       .from(VideoData)
-      .where(eq(VideoData.createdBy, user?.primaryEmailAddress?.emailAddress))
-      .limit(pageSize)
-      .offset((page - 1) * pageSize);
+      .where(eq(VideoData.createdBy, user?.primaryEmailAddress?.emailAddress));
+    // .limit(pageSize)
+    // .offset((page - 1) * pageSize);
 
     setLoading(false);
     setVideoList(result);

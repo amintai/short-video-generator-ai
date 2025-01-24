@@ -15,7 +15,6 @@ const useCreateNewVideo = () => {
   const [imageList, setImageList] = useState([]);
 
   const [playVideo, setPlayVideo] = useState(false);
-  const [videoId, setVideoId] = useState(1);
 
   const [videoContent, setVideoContent] = useState();
 
@@ -163,7 +162,6 @@ const useCreateNewVideo = () => {
       audioFileUrl,
       captions,
       playVideo,
-      videoId,
       videoData,
       videoContent,
     },
