@@ -1,39 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Thumbnail } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
-import { db } from "../../../configs/db";
-import { VideoData } from "../../../configs/schema";
-import { eq } from "drizzle-orm";
+import useGetVideo from "../create-new/hooks/useGetVideo";
 
 const VideoList = ({ videoList }) => {
-  const [openPlayDialog, setOpenPlayDialog] = useState(false);
-  const [videoId, setVideoId] = useState();
-  const [videoData, setVideoData] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getVideoData = async (id) => {
-    setIsLoading(true);
-    await db
-      .select()
-      .from(VideoData)
-      .where(eq(VideoData.id, id))
-      .then((res) => {
-        if (res.length) {
-          setVideoData(res[0]);
-          setIsLoading(false);
-          setOpenPlayDialog(true);
-        }
-      });
-  };
-
-  const handleCancelVideoPlayerCb = () => {
-    if (!openPlayDialog) {
-      getVideoData();
-    } else {
-      setOpenPlayDialog(false);
-    }
-  };
+  const [
+    { openPlayDialog, videoData, isLoading },
+    { getVideoData, handleCancelVideoPlayerCb },
+  ] = useGetVideo();
 
   const ref = useRef();
   return (
