@@ -29,7 +29,7 @@ const useVideoList = () => {
     setVideoList(result);
   };
 
-  return [{ videoList, isLoading }, { getVideoList }];
+  return [{ videoList, isLoading }];
 };
 
 export default useVideoList;

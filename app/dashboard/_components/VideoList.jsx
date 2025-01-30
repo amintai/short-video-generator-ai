@@ -8,7 +8,9 @@ const VideoList = ({ videoList }) => {
   const [
     { openPlayDialog, videoData, isLoading },
     { getVideoData, handleCancelVideoPlayerCb },
-  ] = useGetVideo();
+  ] = useGetVideo({
+    videoList,
+  });
 
   const ref = useRef();
   return (
