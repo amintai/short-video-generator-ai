@@ -15,7 +15,6 @@ const useCreateNewVideo = () => {
   const [imageList, setImageList] = useState([]);
 
   const [playVideo, setPlayVideo] = useState(false);
-  const [videoId, setVideoId] = useState(1);
 
   const [videoContent, setVideoContent] = useState();
 
@@ -40,7 +39,7 @@ const useCreateNewVideo = () => {
   const saveVideoData = async (videoData) => {
     setAPILoading(true);
 
-    const result = await db
+    await db
       .insert(VideoData)
       .values({
         script: videoData?.videoScript,
@@ -56,7 +55,6 @@ const useCreateNewVideo = () => {
     setVideoContent(videoData);
     setVideoData({});
 
-    setVideoId(result[0].id);
     setPlayVideo(true);
     setAPILoading(false);
   };
@@ -98,6 +96,7 @@ const useCreateNewVideo = () => {
     const res = await axios.post("/api/generate-audio", {
       text: script,
       id: id,
+      timeout: 30000,
     });
 
     setVideoData((state) => ({
@@ -162,7 +161,6 @@ const useCreateNewVideo = () => {
       audioFileUrl,
       captions,
       playVideo,
-      videoId,
       videoData,
       videoContent,
     },
