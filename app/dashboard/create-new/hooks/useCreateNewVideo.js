@@ -39,7 +39,7 @@ const useCreateNewVideo = () => {
   const saveVideoData = async (videoData) => {
     setAPILoading(true);
 
-    const result = await db
+    await db
       .insert(VideoData)
       .values({
         script: videoData?.videoScript,
@@ -55,7 +55,6 @@ const useCreateNewVideo = () => {
     setVideoContent(videoData);
     setVideoData({});
 
-    setVideoId(result[0].id);
     setPlayVideo(true);
     setAPILoading(false);
   };
