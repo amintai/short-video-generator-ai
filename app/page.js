@@ -1,12 +1,18 @@
-import { UserButton } from "@clerk/nextjs";
-import { Button } from "../components/ui/button";
+"use client";
+import HomePageHeader from "./_components/Header";
+import FeaturedCard from "./_components/FeaturedCard";
+import Footer from "./_components/Footer";
+import MainSection from "./_components/MainSection";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      This is the initial Text
-      <Button>Click Me!</Button>
-      <UserButton />
-    </div>
+    <>
+      <div className="h-screen pb-14 bg-right bg-cover px-12">
+        <HomePageHeader />
+        <MainSection />
+        <FeaturedCard />
+        <Footer />
+      </div>
+    </>
   );
 }
