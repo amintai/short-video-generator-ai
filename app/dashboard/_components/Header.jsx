@@ -12,7 +12,6 @@ const Header = () => {
       </div>
 
       <div className="flex gap-3 items-center">
-        <Button> Dashboard </Button>
         <UserButton />
       </div>
     </div>

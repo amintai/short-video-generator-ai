@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
+import { Button } from "../../@/components/ui/button";
+import { redirect } from "next/navigation";
 
 const HomePageHeader = () => {
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-sm backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-6 md:px-12 lg:px-20 py-4">
-        {/* Logo & Brand Name */}
         <a
           className="flex items-center text-indigo-400 no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
-          href="#"
+          href="/"
         >
           <svg
             className="h-8 fill-current text-indigo-600 pr-2"
@@ -21,8 +22,7 @@ const HomePageHeader = () => {
           AI Video
         </a>
 
-        {/* Social Media Links */}
-        <div className="flex space-x-4">
+        {/* <div className="flex space-x-4">
           <a
             className="text-blue-400 hover:text-indigo-800 transition"
             href="https://twitter.com/intent/tweet?url=#"
@@ -47,6 +47,18 @@ const HomePageHeader = () => {
               <path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"></path>
             </svg>
           </a>
+        </div> */}
+
+        <div>
+          <Button variant="outline" onClick={() => redirect("/sign-in")}>
+            Sign In
+          </Button>
+          <Button
+            onClick={() => redirect("/sign-up")}
+            className="bg-indigo-400 ml-3"
+          >
+            Sign Up
+          </Button>
         </div>
       </div>
     </header>
