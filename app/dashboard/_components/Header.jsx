@@ -1,11 +1,9 @@
 import { UserButton } from "@clerk/nextjs";
-import { Button } from "../../../components/ui/button";
-import Image from "next/image";
 import React from "react";
 
 const Header = () => {
   return (
-    <div className="p-3 px-5 fixed flex flex-no-wrap items-center justify-between shadow-md w-full ">
+    <div className="p-3 px-5 fixed z-50 top-0 bg-white flex flex-no-wrap items-center backdrop-blur-md justify-between shadow-md w-full ">
       <a
         className="flex items-center no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
         href="/dashboard"
