@@ -5,7 +5,7 @@ import React from "react";
 
 const Header = () => {
   return (
-    <div className="p-3 px-5 fixed flex flex-no-wrap items-center justify-between shadow-md w-full ">
+    <div className="p-3 px-5 fixed top-0 left-0 bg-white z-50 flex items-center justify-between shadow-sm w-full ">
       <a
         className="flex items-center no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
         href="/dashboard"

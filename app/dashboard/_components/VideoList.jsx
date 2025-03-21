@@ -4,17 +4,18 @@ import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
 import useGetVideo from "../create-new/hooks/useGetVideo";
 
-const VideoList = ({ videoList }) => {
+const VideoList = ({ videoList, fetchVideoListCb = () => {} }) => {
   const [
     { openPlayDialog, videoData, isLoading },
-    { getVideoData, handleCancelVideoPlayerCb },
+    { getVideoData, handleCancelVideoPlayerCb,handleDeleteVideo },
   ] = useGetVideo({
     videoList,
+    fetchVideoListCb
   });
 
   const ref = useRef();
   return (
-    <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-y-4 lg:gap-6 gap-8">
+    <div className="mt-10 grid gap-4 grid-cols-2 md:grid-cols-3  place-items-center">
       {videoList.map((item, index) => {
         return (
           <div
@@ -46,6 +47,7 @@ const VideoList = ({ videoList }) => {
       {openPlayDialog ? (
         <PlayerDialog
           handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
+          handleDeleteVideo={handleDeleteVideo}
           playVideo={openPlayDialog}
           isLoading={isLoading}
           videoData={videoData}

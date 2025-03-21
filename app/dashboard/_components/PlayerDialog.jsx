@@ -16,6 +16,7 @@ const PlayerDialog = ({
   handleCancelVideoPlayerCb,
   isLoading,
   videoData,
+  handleDeleteVideo = () => {},
 }) => {
   const [durationInFrame, setDurationInFrame] = useState(100);
 
@@ -62,6 +63,8 @@ const PlayerDialog = ({
             Cancel
           </Button>
           <Button>Export</Button>
+
+          <Button variant="link" onClick={() => handleDeleteVideo(videoData)}>Delete</Button>
         </div>
       </DialogContent>
     </Dialog>

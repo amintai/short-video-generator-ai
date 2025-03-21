@@ -40,7 +40,7 @@ const SideNav = () => {
   const pathName = usePathname();
 
   return (
-    <div className="w-64 h-screen shadow-md p-5">
+    <div className="mt-20 w-64 h-screen shadow-sm p-5">
       <div className="grid gap-3">
         {Menu.map((item) => {
           const { Icon, name, path, id } = item;

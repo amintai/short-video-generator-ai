@@ -8,7 +8,7 @@ import FullScreenLoader from "./_components/FullScreenLoader";
 import useVideoList from "./hooks/useVideoList";
 
 const Dashboard = () => {
-  const [{ videoList, isLoading }] = useVideoList();
+  const [{ videoList, isLoading },{fetchVideoListCb}] = useVideoList();
 
   if (isLoading) {
     return <FullScreenLoader />;
@@ -21,7 +21,7 @@ const Dashboard = () => {
           <Button>+ Create New</Button>
         </Link>
       </div>
-      {!videoList.length ? <EmptyState /> : <VideoList videoList={videoList} />}
+      {!videoList.length ? <EmptyState /> : <VideoList fetchVideoListCb={fetchVideoListCb} videoList={videoList} />}
     </div>
   );
 };

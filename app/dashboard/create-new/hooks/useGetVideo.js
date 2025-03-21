@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { db } from "../../../../configs/db";
+import { VideoData } from "../../../../configs/schema";
+import { eq } from "drizzle-orm";
 
-const useGetVideo = ({ videoList }) => {
+const useGetVideo = ({ videoList,fetchVideoListCb }) => {
   const [openPlayDialog, setOpenPlayDialog] = useState(false);
   const [videoData, setVideoData] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +22,18 @@ const useGetVideo = ({ videoList }) => {
     }
   };
 
+  const handleDeleteVideo = async (videoData) => {
+    await db.delete(VideoData).where(eq(VideoData.id, videoData.id)).returning().then((res) => {
+      console.log("res",res)
+      setOpenPlayDialog(false);
+      setVideoData()
+      fetchVideoListCb()
+    })
+  } 
+
   return [
     { openPlayDialog, videoData, isLoading },
-    { getVideoData, handleCancelVideoPlayerCb },
+    { getVideoData, handleCancelVideoPlayerCb,handleDeleteVideo },
   ];
 };
 

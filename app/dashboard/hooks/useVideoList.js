@@ -16,6 +16,10 @@ const useVideoList = () => {
     }
   }, [user]);
 
+  const fetchVideoListCb = () => {
+    getVideoList()
+  }
+
   const getVideoList = async (page = 1, pageSize = 4) => {
     setLoading(true);
     const result = await db
@@ -29,7 +33,7 @@ const useVideoList = () => {
     setVideoList(result);
   };
 
-  return [{ videoList, isLoading }];
+  return [{ videoList, isLoading }, {fetchVideoListCb}];
 };
 
 export default useVideoList;
