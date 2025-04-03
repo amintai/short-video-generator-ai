@@ -35,7 +35,7 @@ const VideoList = ({ videoList, fetchVideoListCb = () => {} }) => {
               component={RemotionVideo}
               inputProps={{
                 ...item,
-                setDurationInFrame: (value) => console.log(value),
+                setDurationInFrame: (value) => {}
               }}
               style={{
                 borderRadius: 15,

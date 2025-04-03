@@ -6,7 +6,7 @@ import { Users } from "../configs/schema";
 import { useUser } from "@clerk/nextjs";
 import React, { useEffect } from "react";
 
-const Provider = ({ children }) => {
+const Providers = ({ children }) => {
   const { user } = useUser();
 
   const isNewUser = async () => {
@@ -14,6 +14,7 @@ const Provider = ({ children }) => {
       .select()
       .from(Users)
       .where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
+
 
     if (!result.length) {
       await db.insert(Users).values({
@@ -31,4 +32,4 @@ const Provider = ({ children }) => {
   return <div>{children}</div>;
 };
 
-export default Provider;
+export default Providers;
