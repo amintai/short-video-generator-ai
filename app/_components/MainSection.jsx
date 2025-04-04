@@ -7,7 +7,7 @@ const MainSection = () => {
       <div className="flex flex-col md:flex-row items-center">
         {/* Left Content Section */}
         <div className="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left">
-          <h1 className="text-3xl md:text-5xl text-indigo-400 font-bold leading-tight">
+          <h1 className="text-3xl md:text-5xl text-primary font-bold leading-tight">
             AI-Powered Short Video Generator:{" "}
             <span className="text-gray-500">
               Create Stunning Clips Instantly!
@@ -19,7 +19,7 @@ const MainSection = () => {
           </p>
 
           {/* Download Section */}
-          <p className="mt-6 text-indigo-400 font-semibold">
+          <p className="mt-6 text-primary font-semibold">
             Download our app:
           </p>
           <div className="flex justify-center md:justify-start space-x-4">

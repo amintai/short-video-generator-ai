@@ -9,7 +9,7 @@ const HomePageHeader = () => {
     <header className="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-sm backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-6 md:px-12 lg:px-20 py-4">
         <a
-          className="flex items-center text-indigo-400 no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
+          className="flex items-center text-primary no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
           href="/"
         >
           <svg
@@ -55,7 +55,7 @@ const HomePageHeader = () => {
           </Button>
           <Button
             onClick={() => redirect("/sign-up")}
-            className="bg-indigo-400 ml-3"
+            className="bg-primary ml-3"
           >
             Sign Up
           </Button>
