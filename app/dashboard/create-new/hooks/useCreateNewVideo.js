@@ -5,6 +5,7 @@ import { VideoDataContext } from "../../../_context/VideoDataContext";
 import { db } from "../../../../configs/db";
 import { useUser } from "@clerk/nextjs";
 import { VideoData } from "../../../../configs/schema";
+import toast from "react-hot-toast";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -17,6 +18,10 @@ const useCreateNewVideo = () => {
   const [playVideo, setPlayVideo] = useState(false);
 
   const [videoContent, setVideoContent] = useState();
+
+  const notify = () => toast.success('Video Generated Successfully.', {
+    position: 'top-right'
+  })
 
   const { user } = useUser();
 
@@ -154,6 +159,7 @@ Ensure the script is engaging, informative, and visually compelling. The respons
       imageList: images,
     }));
     setImageList(images);
+    notify()
     setAPILoading(false);
   };
 

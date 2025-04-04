@@ -2,11 +2,17 @@ import { useState } from "react";
 import { db } from "../../../../configs/db";
 import { VideoData } from "../../../../configs/schema";
 import { eq } from "drizzle-orm";
+import toast from "react-hot-toast";
 
-const useGetVideo = ({ videoList,fetchVideoListCb }) => {
+const useGetVideo = ({ videoList, fetchVideoListCb }) => {
   const [openPlayDialog, setOpenPlayDialog] = useState(false);
   const [videoData, setVideoData] = useState();
   const [isLoading, setIsLoading] = useState(false);
+
+  const notify = () => toast.success('Video Deleted Successfully.', {
+    position: 'top-right'
+  })
+
 
   const getVideoData = async (id) => {
     const selectedVideoData = videoList.filter((item) => item.id === id);
@@ -24,16 +30,16 @@ const useGetVideo = ({ videoList,fetchVideoListCb }) => {
 
   const handleDeleteVideo = async (videoData) => {
     await db.delete(VideoData).where(eq(VideoData.id, videoData.id)).returning().then((res) => {
-      console.log("res",res)
       setOpenPlayDialog(false);
       setVideoData()
       fetchVideoListCb()
+      notify()
     })
-  } 
+  }
 
   return [
     { openPlayDialog, videoData, isLoading },
-    { getVideoData, handleCancelVideoPlayerCb,handleDeleteVideo },
+    { getVideoData, handleCancelVideoPlayerCb, handleDeleteVideo },
   ];
 };
 

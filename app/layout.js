@@ -5,6 +5,7 @@ import Providers from "./provider";
 import { Outfit } from "next/font/google";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import { Toaster } from "react-hot-toast";
 
 // export const metadata = {
 //   title: "AI Short Video Generator",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
         <html lang="en">
           <body className={outfit.className}>
             <Providers>{children}</Providers>
+            <Toaster />
           </body>
         </html>
       </ClerkProvider>
