@@ -8,7 +8,7 @@ const FeaturedCard = () => {
       className="mt-32 w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8"
     >
       <motion.div
-        className="p-6 bg-indigo-400 rounded-xl text-center shadow-lg shadow-rounded"
+        className="p-6 bg-primary rounded-xl text-center shadow-lg shadow-rounded"
         whileHover={{ scale: 1.05 }}
       >
         <h3 className="text-2xl text-white font-semibold">AI-Powered</h3>
@@ -17,7 +17,7 @@ const FeaturedCard = () => {
         </p>
       </motion.div>
       <motion.div
-        className="p-6 bg-indigo-400 rounded-xl text-center shadow-lg"
+        className="p-6 bg-primary rounded-xl text-center shadow-lg"
         whileHover={{ scale: 1.05 }}
       >
         <h3 className="text-2xl text-white font-semibold">Fast Processing</h3>
@@ -26,7 +26,7 @@ const FeaturedCard = () => {
         </p>
       </motion.div>
       <motion.div
-        className="p-6 bg-indigo-400 rounded-xl text-center shadow-lg"
+        className="p-6 bg-primary rounded-xl text-center shadow-lg"
         whileHover={{ scale: 1.05 }}
       >
         <h3 className="text-2xl text-white font-semibold">Customizable</h3>
