@@ -62,10 +62,18 @@ const useCreateNewVideo = () => {
   //! Generate Video Script
   const getVideoScript = async () => {
     setAPILoading(true);
-    const propmt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
+    // const prompt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
+    const prompt = `Generate a detailed script for a video that is exactly ${formData.duration} seconds long, focused on the topic: "${formData.topic}".  
+For each part of the video, also generate an AI-generated image prompt in the "${formData.imageStyle}" style.  
+The output should be in JSON format with the following structure:  
+- **imagePrompt**: A detailed image generation prompt for AI.  
+- **contentText**: Well-structured, engaging, and concise narration text for the video.  
+
+Ensure the script is engaging, informative, and visually compelling. The response must be in JSON format only, without any plain text or introductory words. Avoid starting with generic scene labels like "Scene 1"`;  
+
     await axios
       .post("/api/get-video-script", {
-        propmt: propmt,
+        prompt: prompt,
       })
       .then((res) => {
         setVideoData((state) => ({
