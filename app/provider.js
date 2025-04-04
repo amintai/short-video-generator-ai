@@ -5,9 +5,12 @@ import { db } from "../configs/db";
 import { Users } from "../configs/schema";
 import { useUser } from "@clerk/nextjs";
 import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { userDetails } from "./redux/sclices/counterSlice";
 
 const Providers = ({ children }) => {
   const { user } = useUser();
+  const dispatch = useDispatch();
 
   const isNewUser = async () => {
     const result = await db
@@ -15,7 +18,8 @@ const Providers = ({ children }) => {
       .from(Users)
       .where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
 
-
+      dispatch(userDetails(result))
+    
     if (!result.length) {
       await db.insert(Users).values({
         name: user.fullName,

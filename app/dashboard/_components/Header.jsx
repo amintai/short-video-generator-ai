@@ -1,9 +1,12 @@
 import { UserButton } from "@clerk/nextjs";
 import React from "react";
+import { useSelector } from "react-redux";
+import { Coins } from "lucide-react";
 
 const Header = () => {
 
-  
+  const coins = useSelector((state) => state.user.details.coins);
+
   return (
     <div className="p-3 px-5 fixed top-0 left-0 bg-white z-50 flex items-center justify-between shadow-sm w-full ">
       <a
@@ -21,7 +24,11 @@ const Header = () => {
       </a>
 
       <div className="flex gap-3 items-center">
-        <UserButton />
+        <div className="flex items-center gap-2 text-primary font-semibold px-4 py-2">
+          <Coins className="w-5 h-5" />
+          <span>{coins}</span>
+        </div>
+          <UserButton />
       </div>
     </div>
   );
