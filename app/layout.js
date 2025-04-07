@@ -25,7 +25,6 @@ if (!publishableKey) {
 }
 
 export default function RootLayout({ children }) {
-  console.log('store', store.getState())
 
   let persistor = persistStore(store);
 

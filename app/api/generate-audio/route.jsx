@@ -7,7 +7,6 @@ const client = new textToSpeech.TextToSpeechClient({
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
 });
 
-console.log("client", client);
 
 export async function POST(req) {
   const { text, id } = await req.json();

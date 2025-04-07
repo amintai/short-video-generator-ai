@@ -20,13 +20,18 @@ const PlayerDialog = ({
 }) => {
   const [durationInFrame, setDurationInFrame] = useState(100);
 
+  const handleCancelCb = () => {
+    if (location.pathname !== "/dashboard") {
+      router.replace("/dashboard");
+    }
+    handleCancelVideoPlayerCb();
+  }
   const router = useRouter();
 
   if (isLoading) {
     return <p>Loading....</p>;
   }
 
-  console.log("videoData", videoData);
 
   return (
     <Dialog open={playVideo}>
@@ -53,12 +58,7 @@ const PlayerDialog = ({
         <div className="flex gap-10">
           <Button
             variant="secondary"
-            onClick={() => {
-              if (location.pathname !== "/dashboard") {
-                router.replace("/dashboard");
-              }
-              handleCancelVideoPlayerCb();
-            }}
+            onClick={handleCancelCb}
           >
             Cancel
           </Button>

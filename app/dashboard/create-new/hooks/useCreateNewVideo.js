@@ -122,7 +122,7 @@ Ensure the script is engaging, informative, and visually compelling. The respons
   };
 
   const handleCreateVideo = () => {
-    if(coins >= 800) {
+    if(coins >= 50) {
       getVideoScript();
     } else {
       errorNotify()
