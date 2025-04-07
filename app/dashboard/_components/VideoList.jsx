@@ -2,48 +2,50 @@ import React, { useRef } from "react";
 import { Thumbnail } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
-import useGetVideo from "../create-new/hooks/useGetVideo";
+import InfiniteScroll from "react-infinite-scroller";
 
-const VideoList = ({ videoList, fetchVideoListCb = () => {} }) => {
-  const [
-    { openPlayDialog, videoData, isLoading },
-    { getVideoData, handleCancelVideoPlayerCb,handleDeleteVideo },
-  ] = useGetVideo({
-    videoList,
-    fetchVideoListCb
-  });
+const VideoList = ({ videoList, openPlayDialog, videoData, handleDeleteVideo, handleCancelVideoPlayerCb, getVideoList, hasNext }) => {
 
   const ref = useRef();
   return (
-    <div className="mt-10 grid gap-4 grid-cols-2 md:grid-cols-3  place-items-center">
-      {videoList.map((item, index) => {
-        return (
-          <div
-            key={index}
-            className="cursor-pointer hover:scale-105 transition-all"
-            onClick={() => {
-              getVideoData(item.id);
-            }}
-          >
-            <Thumbnail
-              ref={ref}
-              durationInFrames={30}
-              compositionWidth={250}
-              compositionHeight={350}
-              fps={30}
-              frameToDisplay={30}
-              component={RemotionVideo}
-              inputProps={{
-                ...item,
-                setDurationInFrame: (value) => {}
-              }}
-              style={{
-                borderRadius: 15,
-              }}
-            />
-          </div>
-        );
-      })}
+    <>
+      <InfiniteScroll
+        pageStart={0}
+        loadMore={getVideoList}
+        hasMore={hasNext || false}
+        loader={<div className="loader text-center mt-10" key={0}>Loading ...</div>}
+      >
+        <div className="mt-10 grid gap-4 grid-cols-2 md:grid-cols-3  place-items-center">
+          {videoList.map((item, index) => {
+            return (
+              <div
+                key={index}
+                className="cursor-pointer hover:scale-105 transition-all"
+                onClick={() => {
+                  getVideoData(item.id);
+                }}
+              >
+                <Thumbnail
+                  ref={ref}
+                  durationInFrames={30}
+                  compositionWidth={250}
+                  compositionHeight={350}
+                  fps={30}
+                  frameToDisplay={30}
+                  component={RemotionVideo}
+                  inputProps={{
+                    ...item,
+                    setDurationInFrame: (value) => { }
+                  }}
+                  style={{
+                    borderRadius: 15,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </InfiniteScroll>
       {openPlayDialog ? (
         <PlayerDialog
           handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
@@ -53,7 +55,7 @@ const VideoList = ({ videoList, fetchVideoListCb = () => {} }) => {
           videoData={videoData}
         />
       ) : null}
-    </div>
+    </>
   );
 };
 

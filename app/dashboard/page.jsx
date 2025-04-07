@@ -8,11 +8,12 @@ import FullScreenLoader from "./_components/FullScreenLoader";
 import useVideoList from "./hooks/useVideoList";
 
 const Dashboard = () => {
-  const [{ videoList, isLoading },{fetchVideoListCb}] = useVideoList();
+  const [
+    { videoList, openPlayDialog, videoData,hasNext },
+    {  handleDeleteVideo, handleCancelVideoPlayerCb,throttledFetch }
+  ] = useVideoList();
 
-  if (isLoading) {
-    return <FullScreenLoader />;
-  }
+
   return (
     <div className="mt-10">
       <div className="flex justify-between items-center ">
@@ -21,7 +22,17 @@ const Dashboard = () => {
           <Button>+ Create New</Button>
         </Link>
       </div>
-      {!videoList.length ? <EmptyState /> : <VideoList fetchVideoListCb={fetchVideoListCb} videoList={videoList} />}
+      {!videoList.length ? <EmptyState /> :
+        <VideoList
+          videoList={videoList}
+          openPlayDialog={openPlayDialog}
+          videoData={videoData}
+          hasNext={hasNext}
+          handleDeleteVideo={handleDeleteVideo}
+          handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
+          getVideoList={throttledFetch}
+        />
+      }
     </div>
   );
 };
