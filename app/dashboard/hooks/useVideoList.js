@@ -101,7 +101,8 @@ const useVideoList = () => {
     { 
       handleDeleteVideo,
       handleCancelVideoPlayerCb,
-      throttledFetch
+      throttledFetch,
+      getVideoData
     }
   ];
 };

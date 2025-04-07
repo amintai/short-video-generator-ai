@@ -4,7 +4,7 @@ import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
 import InfiniteScroll from "react-infinite-scroller";
 
-const VideoList = ({ videoList, openPlayDialog, videoData, handleDeleteVideo, handleCancelVideoPlayerCb, getVideoList, hasNext }) => {
+const VideoList = ({ videoList, openPlayDialog, videoData, handleDeleteVideo, handleCancelVideoPlayerCb, getVideoList, hasNext, getVideoData,isLoading }) => {
 
   const ref = useRef();
   return (

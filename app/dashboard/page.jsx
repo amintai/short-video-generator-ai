@@ -9,8 +9,8 @@ import useVideoList from "./hooks/useVideoList";
 
 const Dashboard = () => {
   const [
-    { videoList, openPlayDialog, videoData,hasNext },
-    {  handleDeleteVideo, handleCancelVideoPlayerCb,throttledFetch }
+    { videoList, openPlayDialog, videoData,hasNext, isLoading },
+    {  handleDeleteVideo, handleCancelVideoPlayerCb,throttledFetch,getVideoData }
   ] = useVideoList();
 
 
@@ -31,6 +31,8 @@ const Dashboard = () => {
           handleDeleteVideo={handleDeleteVideo}
           handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
           getVideoList={throttledFetch}
+          isLoading={isLoading}
+          getVideoData={getVideoData}
         />
       }
     </div>
