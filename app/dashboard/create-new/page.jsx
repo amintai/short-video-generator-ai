@@ -7,6 +7,7 @@ import { Button } from "../../../components/ui/button";
 import CustomLoading from "./_components/CustomLoading";
 import useCreateNewVideo from "./hooks/useCreateNewVideo";
 import PlayerDialog from "../_components/PlayerDialog";
+import { Wand2 } from "lucide-react";
 
 const CreateNew = () => {
   const [
@@ -42,6 +43,7 @@ const CreateNew = () => {
         <SelectDuration onHandleInputChange={onHandleInputChange} />
 
         <Button className="mt-10 w-full" onClick={handleCreateVideo}>
+        <Wand2 className="mr-2 h-4 w-4" />
           Create Short Video
         </Button>
       </div>

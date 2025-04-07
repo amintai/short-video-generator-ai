@@ -6,6 +6,8 @@ import { Outfit } from "next/font/google";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { Toaster } from "react-hot-toast";
+import { persistStore } from "redux-persist";
+import { PersistGate } from "redux-persist/integration/react";
 
 // export const metadata = {
 //   title: "AI Short Video Generator",
@@ -24,16 +26,21 @@ if (!publishableKey) {
 
 export default function RootLayout({ children }) {
   console.log('store', store.getState())
+
+  let persistor = persistStore(store);
+
   return (
     <Provider store={store}>
-      <ClerkProvider publishableKey={publishableKey}>
-        <html lang="en">
-          <body className={outfit.className}>
-            <Providers>{children}</Providers>
-            <Toaster />
-          </body>
-        </html>
-      </ClerkProvider>
+      <html lang="en">
+        <body className={outfit.className}>
+          <PersistGate loading={null} persistor={persistor}>
+            <ClerkProvider publishableKey={publishableKey}>
+              <Providers>{children}</Providers>
+              <Toaster />
+            </ClerkProvider>
+          </PersistGate>
+        </body>
+      </html>
     </Provider>
   );
 }

@@ -11,7 +11,7 @@ export const counterSlice = createSlice({
     userDetails: (state, param) => {
       const { payload } = param;
 
-      state.details = payload.at(0)
+      state.details = payload
     }
   },
 });

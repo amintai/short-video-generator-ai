@@ -18,7 +18,7 @@ const Providers = ({ children }) => {
       .from(Users)
       .where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
 
-      dispatch(userDetails(result))
+      dispatch(userDetails(result.at(0)))
     
     if (!result.length) {
       await db.insert(Users).values({

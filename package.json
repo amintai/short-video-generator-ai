@@ -38,6 +38,7 @@
     "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
     "redux-logger": "^3.0.6",
+    "redux-persist": "^6.0.0",
     "remotion": "4.0.251",
     "replicate": "^1.0.1",
     "tailwind-merge": "^2.6.0",

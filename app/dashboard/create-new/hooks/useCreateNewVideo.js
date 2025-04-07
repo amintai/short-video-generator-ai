@@ -4,8 +4,11 @@ import { v4 as uuid4 } from "uuid";
 import { VideoDataContext } from "../../../_context/VideoDataContext";
 import { db } from "../../../../configs/db";
 import { useUser } from "@clerk/nextjs";
-import { VideoData } from "../../../../configs/schema";
+import { Users, VideoData } from "../../../../configs/schema";
 import toast from "react-hot-toast";
+import { eq } from "drizzle-orm";
+import { useDispatch, useSelector } from "react-redux";
+import { userDetails } from "../../../redux/sclices/counterSlice";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -15,6 +18,18 @@ const useCreateNewVideo = () => {
   const [captions, setCaptions] = useState([]);
   const [imageList, setImageList] = useState([]);
 
+
+  const { userId,coins } = useSelector((state) => {
+    const userId = state.user.details.id;
+    const coins = state.user.details.coins;
+    return {
+      userId,
+      coins
+    }
+  })
+
+  const dispatch = useDispatch();
+
   const [playVideo, setPlayVideo] = useState(false);
 
   const [videoContent, setVideoContent] = useState();
@@ -22,6 +37,11 @@ const useCreateNewVideo = () => {
   const notify = () => toast.success('Video Generated Successfully.', {
     position: 'top-right'
   })
+
+  const errorNotify = () => toast.error("You don't have enough coins to generate this video, Upgrade Your plan!", {
+    position: 'top-right'
+  })
+
 
   const { user } = useUser();
 
@@ -39,6 +59,14 @@ const useCreateNewVideo = () => {
       saveVideoData(videoData);
     }
   }, [videoData]);
+
+  const videoSuccessCb = async () => {
+     const userData = await db.update(Users).set({
+      coins: coins - 50
+     }).where(eq(Users.id, userId)).returning(Users);
+
+     dispatch(userDetails(userData.at(0)))
+    }
 
   //! Save Video Data To DB
   const saveVideoData = async (videoData) => {
@@ -94,7 +122,11 @@ Ensure the script is engaging, informative, and visually compelling. The respons
   };
 
   const handleCreateVideo = () => {
-    getVideoScript();
+    if(coins >= 800) {
+      getVideoScript();
+    } else {
+      errorNotify()
+    }
   };
 
   //! Generate Audio Script
@@ -160,6 +192,9 @@ Ensure the script is engaging, informative, and visually compelling. The respons
     }));
     setImageList(images);
     notify()
+
+    await videoSuccessCb();
+    
     setAPILoading(false);
   };
 
