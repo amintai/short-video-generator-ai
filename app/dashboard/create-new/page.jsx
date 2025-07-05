@@ -8,6 +8,7 @@ import CustomLoading from "./_components/CustomLoading";
 import useCreateNewVideo from "./hooks/useCreateNewVideo";
 import PlayerDialog from "../_components/PlayerDialog";
 import { Wand2 } from "lucide-react";
+import SelectLanguage from "./_components/SelectLanguage";
 
 const CreateNew = () => {
   const [
@@ -39,6 +40,7 @@ const CreateNew = () => {
 
       <div className="mt-10 shadow-md p-10">
         <SelectTopic onHandleInputChange={onHandleInputChange} />
+        <SelectLanguage onHandleInputChange={onHandleInputChange} />
         <SelectStyle onHandleInputChange={onHandleInputChange} />
         <SelectDuration onHandleInputChange={onHandleInputChange} />
 
