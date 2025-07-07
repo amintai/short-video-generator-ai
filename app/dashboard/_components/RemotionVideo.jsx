@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   AbsoluteFill,
   Audio,
@@ -18,12 +18,19 @@ const RemotionVideo = ({
   const { fps } = useVideoConfig();
   const frame = useCurrentFrame();
 
-  const getDurationFrames = () => {
-    let endTimeStamp = captions?.[captions.length - 1]?.end;
-    setDurationInFrame((endTimeStamp / 1000) * fps);
-
+  // Calculate duration frames without side effects
+  const durationFrames = useMemo(() => {
+    if (!captions || captions.length === 0) return 90; // Default 3 seconds at 30fps
+    const endTimeStamp = captions[captions.length - 1]?.end || 3000;
     return (endTimeStamp / 1000) * fps;
-  };
+  }, [captions, fps]);
+
+  // Use useEffect to update parent component state
+  useEffect(() => {
+    if (setDurationInFrame && typeof setDurationInFrame === 'function') {
+      setDurationInFrame(durationFrames);
+    }
+  }, [durationFrames, setDurationInFrame]);
 
   const getCurrentCaptions = () => {
     const currentTime = (frame / 30) * 1000; //Convert frame number to milisecond
@@ -40,8 +47,8 @@ const RemotionVideo = ({
       }}
     >
       {imageList?.map((item, index) => {
-        const startTime = (index * getDurationFrames()) / imageList?.length;
-        const duration = getDurationFrames();
+        const startTime = (index * durationFrames) / imageList?.length;
+        const duration = durationFrames;
 
         const scale = (index) => {
           return interpolate(
@@ -56,7 +63,7 @@ const RemotionVideo = ({
             <Sequence
               key={Math.random()}
               from={startTime}
-              durationInFrames={getDurationFrames()}
+              durationInFrames={durationFrames}
             >
               <AbsoluteFill
                 style={{
