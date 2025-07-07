@@ -6,7 +6,14 @@ export const Users = pgTable("users", {
   email: varchar("email").notNull(),
   imageUrl: varchar("imageUrl"),
   subscription: boolean("subscription").default(false),
-  coins: numeric('coins').default(1000)
+  subscriptionPlan: varchar("subscriptionPlan").default("free"), // free, basic, pro, enterprise
+  subscriptionStatus: varchar("subscriptionStatus").default("inactive"), // active, inactive, cancelled
+  stripeCustomerId: varchar("stripeCustomerId"),
+  stripeSubscriptionId: varchar("stripeSubscriptionId"),
+  subscriptionStartDate: timestamp("subscriptionStartDate"),
+  subscriptionEndDate: timestamp("subscriptionEndDate"),
+  videosUsed: numeric('videosUsed').default(0),
+  videoLimit: numeric('videoLimit').default(5)
 });
 
 export const VideoData = pgTable("videoData", {
@@ -18,4 +25,40 @@ export const VideoData = pgTable("videoData", {
   imageList: varchar("imageList").array(),
   createdBy: varchar("createdBy").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  views: numeric('views').default(0),
+  downloads: numeric('downloads').default(0),
+  shares: numeric('shares').default(0),
+  duration: numeric('duration').default(30),
+  videoUrl: varchar("videoUrl"),
+  thumbnailUrl: varchar("thumbnailUrl"),
+  status: varchar("status").default("completed"), // processing, completed, failed
+  tags: varchar("tags").array(),
+  category: varchar("category")
+});
+
+export const VideoAnalytics = pgTable("videoAnalytics", {
+  id: serial("id").primaryKey(),
+  videoId: numeric('videoId').notNull(),
+  action: varchar("action").notNull(), // view, download, share
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  userEmail: varchar("userEmail"),
+  ipAddress: varchar("ipAddress"),
+  userAgent: varchar("userAgent"),
+  referrer: varchar("referrer")
+});
+
+export const Templates = pgTable("templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: varchar("description", { length: 500 }),
+  category: varchar("category").notNull(), // business, education, entertainment, social, marketing
+  thumbnail: varchar("thumbnail"),
+  previewVideo: varchar("previewVideo"),
+  templateData: json("templateData").notNull(), // Contains style, format, duration settings
+  isPremium: boolean("isPremium").default(false),
+  createdBy: varchar("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  usageCount: numeric('usageCount').default(0),
+  rating: numeric('rating').default(0),
+  tags: varchar("tags").array()
 });

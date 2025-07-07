@@ -26,6 +26,7 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@reduxjs/toolkit": "^2.6.1",
     "@remotion/cli": "4.0.251",
+    "@stripe/stripe-js": "^7.4.0",
     "assemblyai": "^4.8.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
@@ -47,6 +48,7 @@
     "redux-persist": "^6.0.0",
     "remotion": "4.0.251",
     "replicate": "^1.0.1",
+    "stripe": "^15.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.5"
@@ -63,7 +65,7 @@
   },
   "overrides": {
     "react-infinite-scroller": {
-        "react": "^19.0.0"
+      "react": "^19.0.0"
     }
-}
+  }
 }
