@@ -15,7 +15,9 @@ import {
   Palette,
   BarChart3,
   Gift,
-  Star
+  Star,
+  Users,
+  Shield
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +30,7 @@ const SideNav = ({ onClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathName = usePathname();
   const coins = useSelector((state) => state.user.details.coins);
+  const isAdmin = useSelector((state) => state.user.details.role); 
 
   const Menu = [
     {
@@ -76,6 +79,20 @@ const SideNav = ({ onClose }) => {
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-50",
       description: "Performance Stats"
+    }
+  ];
+
+  // Conditional menu for admin
+  const adminMenu = [
+    {
+      id: 9,
+      name: "User Management",
+      path: "/dashboard/user-management",
+      Icon: Users,
+      color: "from-teal-500 to-teal-600",
+      bgColor: "bg-teal-50",
+      description: "Manage users and roles",
+      role: "admin"
     }
   ];
 
@@ -193,7 +210,7 @@ const SideNav = ({ onClose }) => {
         {/* Main Navigation */}
         <div className="space-y-2 mb-8">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Main</h3>
-          {Menu.map((item) => (
+{[...Menu, ...(isAdmin ? adminMenu : [])].map((item) => (
             <MenuItem 
               key={item.id} 
               item={item} 

@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+# 🎬 Short Video Generator: AI-Powered Micro SaaS Platform
 
-First, run the development server:
+An AI-powered full-stack video generation SaaS that allows users to effortlessly create short, branded videos with script, audio, images, and captions — all in under 60 seconds.
 
-```bash
+## 🚀 Overview
+
+The **Short Video Generator** is a Micro SaaS platform built to simplify video creation for solo creators, marketers, and small businesses. Powered by cutting-edge AI, users can generate, download, and share short-form videos by selecting simple inputs like topic and duration. The platform uses a **coin-based monetization model**, allowing flexibility for free and paid users.
+
+---
+
+## 🧠 Core Features
+
+- ✅ **AI Video Generation**: Create professional short videos with AI-generated script, voice, captions, and visuals.
+- 💰 **Coin-Based System**: Each video costs coins; users can purchase more via in-app purchases.
+- 🎯 **Custom Parameters**: Choose duration and topic to personalize content.
+- 🔐 **Auth System**: Sign up / log in to manage your videos and coins.
+- 📥 **Downloadable Videos**: Save your generated videos offline.
+- 📲 **1-Click Sharing**: Share directly to WhatsApp, Facebook, Instagram, and more.
+
+---
+
+## 🧩 System Architecture & Flow
+
+### 1. 🔐 Authentication
+- New users sign up, and data is saved to the database.
+- Returning users can log in and access their dashboard.
+
+### 2. 🎛️ Video Generation Pipeline
+
+**Step-by-step Breakdown:**
+
+| Step              | Service/Technology Used                          | Description                                                  |
+|-------------------|--------------------------------------------------|--------------------------------------------------------------|
+| 🎯 Input          | React, Next.js UI                                | User selects topic + video duration                          |
+| 🔻 Coin Deduction | Firebase / Supabase                              | Deducts coins from user balance                              |
+| 📜 Script         | Gemini AI                                        | Generates video script with text and image prompts           |
+| 🎧 Audio          | Google Cloud Text-to-Speech                      | Converts script to voice (MP3)                               |
+| ✍️ Captions       | AssemblyAI                                       | Generates SRT captions                                       |
+| 🖼️ Image Gen     | AI-powered image prompt tool (e.g. DALL·E)       | Creates visual scenes matching script                        |
+| 🎞️ Compilation   | Server-side renderer / FFmpeg (planned)          | Merges audio, images, captions into a cohesive video         |
+| 🗃️ Storage        | Firebase Storage                                 | Stores audio, images, captions, and final video              |
+
+---
+
+### 3. 📤 Download & Share
+- Users can download the video file directly.
+- 1-click sharing across WhatsApp, Instagram, Facebook, and more.
+
+---
+
+## 🌱 Future Improvements
+
+### 🧠 Enhanced AI Capabilities
+- [x] Voice tone/style modulation
+- [x] Multi-language text-to-speech and subtitles
+- [ ] Smart scene suggestion & transitions
+
+### 🛠️ UX & Editor Enhancements
+- [x] Template-based video creation
+- [ ] Real-time video preview
+- [ ] Drag & drop video editor
+
+### 💸 Monetization & Growth
+- [ ] Freemium access with limited free coins
+- [ ] Monthly/annual subscription plans
+- [ ] Affiliate/referral program
+- [ ] User-generated video marketplace
+
+---
+
+## 🔗 Inspiration & Related Tools
+
+- [Revid AI](https://www.revid.ai/) – Commercial AI-powered video editor
+- Canva Video, Lumen5 – Platforms that inspired easy visual storytelling
+
+---
+
+## 🧪 Tech Stack
+
+| Layer            | Technology Used                   |
+|------------------|-----------------------------------|
+| Frontend         | React, Next.js, Tailwind CSS       |
+| Backend/API      | Node.js, Firebase, Supabase        |
+| AI Integration   | Gemini AI, Google TTS, AssemblyAI  |
+| Storage          | Firebase Storage                   |
+| Auth & Database  | Firebase Auth / Supabase           |
+| Deployment       | Vercel (Frontend)                  |
+
+---
+
+## 🧑‍💻 Getting Started
+
+\`\`\`bash
+# 1. Clone the repo
+git clone https://github.com/amintai/short-video-generator-ai.git
+cd short-video-generator-ai
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup environment variables
+cp .env.example .env
+# Fill in API keys for Firebase, Gemini, Google TTS, AssemblyAI, etc.
+
+# 4. Run the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🙌 Contribution
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Contributions, issues, and feature requests are welcome!  
+Please open a pull request or start a discussion.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📜 License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is licensed under the [MIT License](LICENSE).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ✨ Creator
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Amin Tai** – [amintai.github.io/mywebsite](https://amintai.github.io/mywebsite/)  
+Connect: [LinkedIn](https://linkedin.com/in/amintai) | [GitHub](https://github.com/amintai)

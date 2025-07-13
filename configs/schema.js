@@ -1,19 +1,27 @@
 import { boolean, pgTable, serial, varchar, json, numeric, timestamp } from "drizzle-orm/pg-core";
-
 export const Users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: varchar("name").notNull(),
   email: varchar("email").notNull(),
   imageUrl: varchar("imageUrl"),
+
+  role: varchar("role").default("user"), // 'user' or 'admin'
+
   subscription: boolean("subscription").default(false),
-  subscriptionPlan: varchar("subscriptionPlan").default("free"), // free, basic, pro, enterprise
-  subscriptionStatus: varchar("subscriptionStatus").default("inactive"), // active, inactive, cancelled
+  subscriptionPlan: varchar("subscriptionPlan").default("free"), // 'free', 'basic', 'pro', etc.
+  subscriptionStatus: varchar("subscriptionStatus").default("inactive"), // 'active', 'inactive', etc.
+
   stripeCustomerId: varchar("stripeCustomerId"),
   stripeSubscriptionId: varchar("stripeSubscriptionId"),
   subscriptionStartDate: timestamp("subscriptionStartDate"),
   subscriptionEndDate: timestamp("subscriptionEndDate"),
-  videosUsed: numeric('videosUsed').default(0),
-  videoLimit: numeric('videoLimit').default(5)
+
+  coins: numeric("coins").default("1000"),
+  videosUsed: numeric("videosUsed").default("0"),
+  videoLimit: numeric("videoLimit").default("5"),
+
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  lastActive: timestamp("lastActive").defaultNow().notNull()
 });
 
 export const VideoData = pgTable("videoData", {
