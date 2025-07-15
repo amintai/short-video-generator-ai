@@ -28,6 +28,7 @@ export async function POST(req) {
 
   const [response] = await client.synthesizeSpeech(request);
 
+  console.log("Audio content written to file: ", response.audioContent,request);
   //! To store audio in firebase
   const audioBuffer = Buffer.from(response.audioContent, "binary");
 

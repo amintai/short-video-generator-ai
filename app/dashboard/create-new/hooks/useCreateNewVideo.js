@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { eq } from "drizzle-orm";
 import { useDispatch, useSelector } from "react-redux";
 import { userDetails } from "../../../redux/sclices/counterSlice";
+import { generateSimpleVideoName } from "../../../../lib/videoUtils";
 
 const useCreateNewVideo = () => {
   const [formData, setFormData] = useState([]);
@@ -18,15 +19,14 @@ const useCreateNewVideo = () => {
   const [captions, setCaptions] = useState([]);
   const [imageList, setImageList] = useState([]);
 
-
-  const { userId,coins } = useSelector((state) => {
+  const { userId, coins } = useSelector((state) => {
     const userId = state.user.details.id;
     const coins = state.user.details.coins;
     return {
       userId,
-      coins
-    }
-  })
+      coins,
+    };
+  });
 
   const dispatch = useDispatch();
 
@@ -34,14 +34,18 @@ const useCreateNewVideo = () => {
 
   const [videoContent, setVideoContent] = useState();
 
-  const notify = () => toast.success('Video Generated Successfully.', {
-    position: 'top-right'
-  })
+  const notify = () =>
+    toast.success("Video Generated Successfully.", {
+      position: "top-right",
+    });
 
-  const errorNotify = () => toast.error("You don't have enough coins to generate this video, Upgrade Your plan!", {
-    position: 'top-right'
-  })
-
+  const errorNotify = () =>
+    toast.error(
+      "You don't have enough coins to generate this video, Upgrade Your plan!",
+      {
+        position: "top-right",
+      }
+    );
 
   const { user } = useUser();
 
@@ -61,20 +65,31 @@ const useCreateNewVideo = () => {
   }, [videoData]);
 
   const videoSuccessCb = async () => {
-     const userData = await db.update(Users).set({
-      coins: coins - 50
-     }).where(eq(Users.id, userId)).returning(Users);
+    const userData = await db
+      .update(Users)
+      .set({
+        coins: coins - 50,
+      })
+      .where(eq(Users.id, userId))
+      .returning(Users);
 
-     dispatch(userDetails(userData.at(0)))
-    }
+    dispatch(userDetails(userData.at(0)));
+  };
 
   //! Save Video Data To DB
   const saveVideoData = async (videoData) => {
     setAPILoading(true);
 
+    // Generate video name based on form data
+    const videoName = generateSimpleVideoName(
+      formData.topic || 'Video Topic',
+      formData.duration || '30'
+    );
+
     await db
       .insert(VideoData)
       .values({
+        name: videoName,
         script: videoData?.videoScript,
         audioFileUrl: videoData?.audioFileUrl,
         captions: videoData?.captions,
@@ -96,13 +111,25 @@ const useCreateNewVideo = () => {
   const getVideoScript = async () => {
     setAPILoading(true);
     // const prompt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
-    const prompt = `Generate a detailed script for a video that is exactly ${formData.duration} seconds long, focused on the topic: "${formData.topic}".  
-For each part of the video, also generate an AI-generated image prompt in the "${formData.imageStyle}" style.  
-The output should be in JSON format with the following structure:  
-- **imagePrompt**: A detailed image generation prompt for AI.  
-- **contentText**: Well-structured, engaging, and concise narration text for the video.  
+    const prompt = `Generate a complete and highly detailed script in ${formData.language} language for a video that is exactly ${formData.duration} seconds long, centered around the topic: "${formData.topic}".  
 
-Ensure the script is engaging, informative, and visually compelling. The response must be in JSON format only, without any plain text or introductory words. Avoid starting with generic scene labels like "Scene 1"`;  
+Divide the script logically based on the time allocation, ensuring smooth transitions and narrative flow throughout the entire video duration.  
+
+For **each segment**, include the following in the output:
+1. **imagePrompt**: A vivid, detailed AI image generation prompt in the "${formData.imageStyle}" style. This should describe the visual scene clearly, specifying mood, composition, lighting, subjects, and any relevant background elements.
+2. **contentText**: A concise, engaging, and informative narration text for that segment. The tone should be audience-appropriate (e.g., professional, casual, inspirational) and aligned with the topic.
+
+**Constraints**:
+- Total script length must be timed to fit exactly within ${formData.duration} seconds.
+- Use natural segmentation (e.g., intro, development, conclusion) without explicitly labeling them.
+- Do NOT use labels like "Scene 1", "Segment", etc.
+- Do NOT wrap the output inside any object or property (e.g., no { "segments": [...] }).
+- The output must be strictly in **valid JSON format**, containing only an **array of objects**, each with:
+  - "imagePrompt": string
+  - "contentText": string
+- Do not include any explanation, headings, or comments outside the JSON array.
+
+Make the result visually immersive and narratively compelling, with each image prompt complementing the corresponding narration.`;
 
     await axios
       .post("/api/get-video-script", {
@@ -117,20 +144,23 @@ Ensure the script is engaging, informative, and visually compelling. The respons
 
         let key = Object.keys(res.data.result);
 
-        generateAudioFile(res.data.result[key]);
+        console.log("Video Script Data:", res.data.result);
+
+        generateAudioFile(res.data.result);
       });
   };
 
   const handleCreateVideo = () => {
-    if(coins >= 50) {
+    if (coins >= 50) {
       getVideoScript();
     } else {
-      errorNotify()
+      errorNotify();
     }
   };
 
   //! Generate Audio Script
   const generateAudioFile = async (videoScriptData) => {
+    console.log("Generating audio file with script data:", videoScriptData);
     let script = "";
     const id = uuid4();
 
@@ -191,10 +221,10 @@ Ensure the script is engaging, informative, and visually compelling. The respons
       imageList: images,
     }));
     setImageList(images);
-    notify()
+    notify();
 
     await videoSuccessCb();
-    
+
     setAPILoading(false);
   };
 
