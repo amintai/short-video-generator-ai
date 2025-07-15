@@ -30,7 +30,7 @@ const SideNav = ({ onClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathName = usePathname();
   const coins = useSelector((state) => state.user.details.coins);
-  const isAdmin = useSelector((state) => state.user.details.role); 
+  const isAdmin = useSelector((state) => state.user.details.role) === 'admin'; 
 
   const Menu = [
     {
