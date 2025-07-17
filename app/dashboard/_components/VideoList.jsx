@@ -11,6 +11,10 @@ import {
   Download,
   Calendar,
   Clock,
+  Copy,
+  Twitter,
+  Facebook,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "../../../@/components/ui/button";
 import {
@@ -18,10 +22,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "../../../@/components/ui/dropdown-menu";
 import { Badge } from "../../../@/components/ui/badge";
 import { Card, CardContent } from "../../../@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "react-hot-toast";
 
 const VideoList = ({
   videoList,
@@ -58,21 +64,75 @@ const VideoList = ({
     setFavorites(newFavorites);
   };
 
-  const shareVideo = async (video) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Check out this AI-generated video!",
-          text: `Created with VideoAI: ${video.name || 'AI-generated video'}...`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log("Error sharing:", err);
+  const handleShare = async (video, platform) => {
+    console.log('Share video called with:', video, 'platform:', platform);
+    const videoUrl = `${window.location.origin}/public/video?video=${video.id}`;
+    const title = "Check out this AI-generated video!";
+    const scriptText = Array.isArray(video.script) && video.script.length > 0 
+      ? video.script.map(segment => segment.contentText).join(' ').substring(0, 100)
+      : 'AI-generated video';
+    const text = `Created with VideoAI: ${scriptText}...`;
+
+    console.log('Sharing URL:', videoUrl);
+
+    try {
+      switch (platform) {
+        case 'native':
+          if (navigator.share) {
+            await navigator.share({ title, text, url: videoUrl });
+            toast.success('Video shared successfully!');
+          } else {
+            throw new Error('Native sharing not supported');
+          }
+          break;
+        case 'copy':
+          await navigator.clipboard.writeText(videoUrl);
+          toast.success('Link copied to clipboard!');
+          break;
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(videoUrl)}`);
+          break;
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`);
+          break;
+        case 'whatsapp':
+          window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${videoUrl}`)}`);
+          break;
+        default:
+          break;
       }
-    } else {
-      // Fallback to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      // You could show a toast here
+    } catch (error) {
+      console.error('Share failed:', error);
+      // Fallback to copy
+      try {
+        await navigator.clipboard.writeText(videoUrl);
+        toast.success('Link copied to clipboard!');
+      } catch (copyError) {
+        toast.error('Sharing failed');
+      }
+    }
+  };
+
+  const downloadVideo = async (video) => {
+    toast.loading('Preparing video for download...');
+    try {
+      // For now, we'll simulate a download process
+      // In a real implementation, you would call your video export API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create a temporary download link
+      const link = document.createElement('a');
+      link.href = '#'; // In reality, this would be the rendered video URL
+      link.download = `${video.name || 'video'}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.dismiss();
+      toast.success('Video download started!');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to download video. Please try again.');
     }
   };
 
@@ -141,17 +201,46 @@ const VideoList = ({
                   />
                 </Button>
 
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="rounded-full w-8 h-8 p-0 text-gray-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    shareVideo(item);
-                  }}
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="rounded-full w-8 h-8 p-0 text-gray-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="px-3 py-2 border-b">
+                      <p className="font-medium text-sm">Share this video</p>
+                    </div>
+                    <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Native Share
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                      <Twitter className="h-4 w-4 mr-2" />
+                      Share on Twitter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                      <Facebook className="h-4 w-4 mr-2" />
+                      Share on Facebook
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Share on WhatsApp
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -173,7 +262,7 @@ const VideoList = ({
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => downloadVideo(item)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
@@ -221,14 +310,46 @@ const VideoList = ({
                 <Play className="h-3 w-3 mr-1" />
                 Play
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full"
-                onClick={() => shareVideo(item)}
-              >
-                <Share2 className="h-3 w-3" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Share2 className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-3 py-2 border-b">
+                    <p className="font-medium text-sm">Share this video</p>
+                  </div>
+                  <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Native Share
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                    <Twitter className="h-4 w-4 mr-2" />
+                    Share on Twitter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                    <Facebook className="h-4 w-4 mr-2" />
+                    Share on Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Share on WhatsApp
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardContent>
@@ -240,6 +361,7 @@ const VideoList = ({
     const isFavorite = favorites.has(item.id);
     const createdDate = new Date(item.createdAt || new Date());
 
+    console.log('createdDate',createdDate,formatDistanceToNow(createdDate, { addSuffix: true }))
     return (
       <Card className="group bg-white/60 backdrop-blur-sm border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden">
         <CardContent className="p-4">
@@ -295,7 +417,7 @@ const VideoList = ({
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <span>
-                      {/* {formatDistanceToNow(createdDate, { addSuffix: true })} */}
+                      {formatDistanceToNow(createdDate, { addSuffix: true })}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -306,11 +428,11 @@ const VideoList = ({
 
                 {/* Badges */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs p-1">
                     AI Generated
                   </Badge>
                   {isFavorite && (
-                    <Badge variant="destructive" className="text-xs">
+                    <Badge variant="destructive" className="text-xs p-1">
                       <Heart className="h-2 w-2 mr-1 fill-current" />
                       Favorite
                     </Badge>
@@ -330,15 +452,47 @@ const VideoList = ({
                     Play
                   </Button>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full"
-                    onClick={() => shareVideo(item)}
-                  >
-                    <Share2 className="h-3 w-3 mr-1" />
-                    Share
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Share2 className="h-3 w-3 mr-1" />
+                        Share
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <div className="px-3 py-2 border-b">
+                        <p className="font-medium text-sm">Share this video</p>
+                      </div>
+                      <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Native Share
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                        <Twitter className="h-4 w-4 mr-2" />
+                        Share on Twitter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                        <Facebook className="h-4 w-4 mr-2" />
+                        Share on Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Share on WhatsApp
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 <div className="flex gap-1">
@@ -366,7 +520,7 @@ const VideoList = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadVideo(item)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </DropdownMenuItem>

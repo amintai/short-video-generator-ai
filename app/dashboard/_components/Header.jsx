@@ -56,26 +56,25 @@ const Header = ({ onMobileMenuToggle }) => {
             </div>
 
             {/* Logo Section - Enhanced Visibility */}
-            <Link
-              href="/dashboard"
-              className="flex items-center space-x-3 group"
-              title="VideoAI Dashboard"
-            >
-              <div className="relative p-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-md border border-gray-200">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <Play className="h-7 w-7 text-white fill-current" />
-                </div>
-                <Sparkles className="h-4 w-4 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
-              </div>
-              <div className="flex flex-col">
-                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold text-xl">
-                  VideoAI
-                </span>
-                <span className="text-xs text-gray-600 font-medium">
-                  Dashboard
-                </span>
-              </div>
-            </Link>
+     <Link
+  href="/dashboard"
+  className="flex items-center space-x-3 group"
+  title="VideoAI Dashboard"
+>
+  <div className="relative p-2 bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <Play className="h-7 w-7 text-white fill-current" />
+    </div>
+    <Sparkles className="h-4 w-4 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+  </div>
+  <div className="flex flex-col">
+    <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold text-xl leading-tight">
+      VideoAI
+    </span>
+    <span className="text-xs text-gray-600 font-medium">Dashboard</span>
+  </div>
+</Link>
+
           </div>
 
           {/* Spacer for center alignment */}

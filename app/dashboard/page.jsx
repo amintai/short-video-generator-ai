@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "../../components/ui/button";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import EmptyState from "./_components/EmptyState";
 import Link from "next/link";
 import VideoList from "./_components/VideoList";
@@ -11,6 +11,7 @@ import { Input } from "../../@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../@/components/ui/select";
 import { Badge } from "../../@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 
 const Dashboard = () => {
   const [
@@ -22,6 +23,19 @@ const Dashboard = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [filterBy, setFilterBy] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
+  const searchParams = useSearchParams();
+
+  // Handle shared video URL parameter
+  useEffect(() => {
+    const videoId = searchParams.get('video');
+    if (videoId && videoList.length > 0 && !openPlayDialog) {
+      // Find the video in the list and open it
+      const foundVideo = videoList.find(video => video.id === parseInt(videoId));
+      if (foundVideo) {
+        getVideoData(foundVideo.id);
+      }
+    }
+  }, [searchParams, videoList, openPlayDialog, getVideoData]);
 
   // Filter and sort videos
   const filteredAndSortedVideos = useMemo(() => {
