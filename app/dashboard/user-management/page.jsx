@@ -6,7 +6,6 @@ const UserManagement = () => {
   const [{ users, userRole }, { addUser, deleteUser, fetchUsers, updateUser }] =
     useUserManagement();
 
-  console.log("users", users);
 
   if (userRole !== "admin") {
     return <div>Access Denied</div>;

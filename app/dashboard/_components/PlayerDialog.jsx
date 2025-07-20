@@ -10,17 +10,17 @@ import { Player } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import { Button } from "../../../components/ui/button";
 import { useRouter } from "next/navigation";
-import { 
-  Download, 
-  Share2, 
-  Heart, 
-  MoreVertical, 
-  X, 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Maximize, 
+import {
+  Download,
+  Share2,
+  Heart,
+  MoreVertical,
+  X,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
   Copy,
   Facebook,
   Twitter,
@@ -30,9 +30,15 @@ import {
   Clock,
   Sparkles,
   Edit3,
-  Check
+  Check,
 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "../../../@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "../../../@/components/ui/dropdown-menu";
 import { Badge } from "../../../@/components/ui/badge";
 import { toast } from "react-hot-toast";
 import { Card, CardContent } from "../../../@/components/ui/card";
@@ -40,6 +46,9 @@ import { Separator } from "../../../@/components/ui/separator";
 import { Input } from "../../../@/components/ui/input";
 import { formatDistanceToNow } from "date-fns";
 import { sanitizeVideoName } from "../../../lib/videoUtils";
+import { db } from "../../../configs/db";
+import { VideoData } from "../../../configs/schema";
+import { eq } from "drizzle-orm";
 
 const PlayerDialog = ({
   playVideo,
@@ -55,19 +64,19 @@ const PlayerDialog = ({
   const [isExporting, setIsExporting] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState('');
+  const [editedName, setEditedName] = useState("");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const playerRef = useRef(null);
   const router = useRouter();
 
   // Initialize editedName when videoData changes
   useEffect(() => {
-    if (videoData?.name) {
+    if (videoData?.video?.name) {
       setEditedName(videoData.name);
     } else {
-      setEditedName('Untitled Video');
+      setEditedName("Untitled Video");
     }
-  }, [videoData?.name]);
+  }, [videoData?.video?.name]);
 
   const handleCancelCb = () => {
     if (location.pathname !== "/dashboard") {
@@ -80,108 +89,112 @@ const PlayerDialog = ({
     setIsExporting(true);
     try {
       // Simulate export process - replace with actual export logic
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // For now, we'll create a simple download link
       // In a real implementation, you'd render the video server-side and provide a download URL
-      const link = document.createElement('a');
-      link.href = '#'; // Replace with actual video URL
-      link.download = `video-${videoData.id || 'generated'}.mp4`;
+      const link = document.createElement("a");
+      link.href = "#"; // Replace with actual video URL
+      link.download = `video-${videoData.video.id || "generated"}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast.success('Video exported successfully!');
+
+      toast.success("Video exported successfully!");
     } catch (error) {
-      console.error('Export failed:', error);
-      toast.error('Export failed. Please try again.');
+      console.error("Export failed:", error);
+      toast.error("Export failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
-  }, [videoData]);
+  }, [videoData.video]);
 
   const handleShare = async (platform) => {
-    const videoUrl = window.location.href;
-    const title = 'Check out this amazing AI-generated video!';
-    const scriptText = Array.isArray(videoData.script) && videoData.script.length > 0 
-      ? videoData.script.map(segment => segment.contentText).join(' ').substring(0, 100)
-      : 'AI-generated video';
+    const videoUrl = `${window.location.origin}/public/video?video=${videoData.video.id}`;
+    const title = "Check out this amazing AI-generated video!";
+    const scriptText =
+      Array.isArray(videoData.video.script) && videoData.video.script.length > 0
+        ? videoData.video.script
+            .map((segment) => segment.contentText)
+            .join(" ")
+            .substring(0, 100)
+        : "AI-generated video";
     const text = `Created with VideoAI: ${scriptText}...`;
 
     try {
       switch (platform) {
-        case 'native':
+        case "native":
           if (navigator.share) {
             await navigator.share({ title, text, url: videoUrl });
           } else {
-            throw new Error('Native sharing not supported');
+            throw new Error("Native sharing not supported");
           }
           break;
-        case 'copy':
+        case "copy":
           await navigator.clipboard.writeText(videoUrl);
-          toast.success('Link copied to clipboard!');
+          toast.success("Link copied to clipboard!");
           break;
-        case 'twitter':
-          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(videoUrl)}`);
+        case "twitter":
+          window.open(
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+              text
+            )}&url=${encodeURIComponent(videoUrl)}`
+          );
           break;
-        case 'facebook':
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`);
+        case "facebook":
+          window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+              videoUrl
+            )}`
+          );
           break;
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${videoUrl}`)}`);
+        case "whatsapp":
+          window.open(
+            `https://wa.me/?text=${encodeURIComponent(`${text} ${videoUrl}`)}`
+          );
           break;
         default:
           break;
       }
       setShowShareMenu(false);
     } catch (error) {
-      console.error('Share failed:', error);
-      // Fallback to copy
-      try {
-        await navigator.clipboard.writeText(videoUrl);
-        toast.success('Link copied to clipboard!');
-      } catch (copyError) {
-        toast.error('Sharing failed');
-      }
+      console.error("Share failed:", error);
     }
   };
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+    toast.success(isFavorite ? "Removed from favorites" : "Added to favorites");
   };
 
   const handleNameUpdate = async () => {
-    if (!editedName.trim() || editedName === videoData?.name) {
+    if (!editedName.trim() || editedName === videoData?.video?.name) {
       setIsEditingName(false);
-      setEditedName(videoData?.name || 'Untitled Video');
+      setEditedName(videoData?.video?.name || "Untitled Video");
       return;
     }
 
     setIsUpdatingName(true);
     try {
       const sanitizedName = sanitizeVideoName(editedName);
-      
+
       // Import database functions dynamically
-      const { db } = await import('../../../../configs/db');
-      const { VideoData } = await import('../../../../configs/schema');
-      const { eq } = await import('drizzle-orm');
-      
+
       await db
         .update(VideoData)
         .set({ name: sanitizedName })
-        .where(eq(VideoData.id, videoData.id));
-      
+        .where(eq(VideoData.id, videoData.video.id));
+
       // Update local state
-      videoData.name = sanitizedName;
+      videoData.video.name = sanitizedName;
       setEditedName(sanitizedName);
       setIsEditingName(false);
-      
-      toast.success('Video name updated successfully!');
+
+      toast.success("Video name updated successfully!");
     } catch (error) {
-      console.error('Error updating video name:', error);
-      toast.error('Failed to update video name');
-      setEditedName(videoData?.name || 'Untitled Video');
+      console.error("Error updating video name:", error);
+      toast.error("Failed to update video name");
+      setEditedName(videoData?.video?.name || "Untitled Video");
     } finally {
       setIsUpdatingName(false);
     }
@@ -189,12 +202,12 @@ const PlayerDialog = ({
 
   const handleEditName = () => {
     setIsEditingName(true);
-    setEditedName(videoData?.name || 'Untitled Video');
+    setEditedName(videoData?.video?.name || "Untitled Video");
   };
 
   const handleCancelEdit = () => {
     setIsEditingName(false);
-    setEditedName(videoData?.name || 'Untitled Video');
+    setEditedName(videoData?.video?.name || "Untitled Video");
   };
 
   if (isLoading) {
@@ -210,11 +223,13 @@ const PlayerDialog = ({
     );
   }
 
-  const createdDate = videoData?.createdAt ? new Date(videoData.createdAt) : new Date();
+  const createdDate = videoData?.video?.createdAt
+    ? new Date(videoData.video.createdAt)
+    : new Date();
 
   return (
     <Dialog open={playVideo} onOpenChange={() => handleCancelCb()}>
-      <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-gradient-to-br from-slate-50 to-white border-0 shadow-2xl">
+      <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-scroll bg-gradient-to-br from-slate-50 to-white border-0 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 bg-white/80 backdrop-blur-sm border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -226,57 +241,84 @@ const PlayerDialog = ({
                 AI Generated Video
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600">
-                {/* Created {formatDistanceToNow(createdDate, { addSuffix: true })} */}
+                Created {formatDistanceToNow(createdDate, { addSuffix: true })}
               </DialogDescription>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {/* Quick Actions */}
             <Button
               variant="ghost"
               size="sm"
-              className={`rounded-full ${isFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+              className={`rounded-full ${
+                isFavorite
+                  ? "text-red-500 hover:text-red-600"
+                  : "text-gray-400 hover:text-red-500"
+              }`}
               onClick={toggleFavorite}
             >
-              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
+              <Heart
+                className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`}
+              />
             </Button>
-            
+
             <DropdownMenu open={showShareMenu} onOpenChange={setShowShareMenu}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="rounded-full text-gray-400 hover:text-blue-600">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full text-gray-400 hover:text-blue-600"
+                >
                   <Share2 className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 ">
                 <div className="px-3 py-2 border-b">
                   <p className="font-medium text-sm">Share this video</p>
-                  <p className="text-xs text-gray-500">Choose how you want to share</p>
+                  <p className="text-xs text-gray-500">
+                    Choose how you want to share
+                  </p>
                 </div>
-                <DropdownMenuItem onClick={() => handleShare('copy')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleShare("copy")}
+                >
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Link
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('native')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleShare("native")}
+                >
                   <Share2 className="h-4 w-4 mr-2" />
                   Native Share
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleShare("twitter")}
+                >
                   <Twitter className="h-4 w-4 mr-2" />
                   Share on Twitter
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleShare("facebook")}
+                >
                   <Facebook className="h-4 w-4 mr-2" />
                   Share on Facebook
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleShare("whatsapp")}
+                >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Share on WhatsApp
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -301,15 +343,16 @@ const PlayerDialog = ({
                 compositionHeight={500}
                 fps={30}
                 inputProps={{
-                  ...videoData,
-                  setDurationInFrame: (frameValue) => setDurationInFrame(frameValue),
+                  ...videoData.video,
+                  setDurationInFrame: (frameValue) =>
+                    setDurationInFrame(frameValue),
                 }}
                 controls
                 doubleClickToFullscreen
                 style={{
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
                 }}
                 className="shadow-2xl"
               />
@@ -335,7 +378,7 @@ const PlayerDialog = ({
                       </Button>
                     )}
                   </div>
-                  
+
                   {isEditingName ? (
                     <div className="flex gap-2">
                       <Input
@@ -345,9 +388,9 @@ const PlayerDialog = ({
                         placeholder="Enter video name..."
                         maxLength={255}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             handleNameUpdate();
-                          } else if (e.key === 'Escape') {
+                          } else if (e.key === "Escape") {
                             handleCancelEdit();
                           }
                         }}
@@ -376,7 +419,7 @@ const PlayerDialog = ({
                     </div>
                   ) : (
                     <p className="text-gray-700 font-medium">
-                      {videoData?.name || 'Untitled Video'}
+                      {videoData?.video?.name || "Untitled Video"}
                     </p>
                   )}
                 </CardContent>
@@ -386,27 +429,29 @@ const PlayerDialog = ({
               <Card className="border-0 shadow-sm bg-white/50">
                 <CardContent className="p-4 space-y-3">
                   <h3 className="font-semibold text-gray-900">Video Details</h3>
-                  
+
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="h-3 w-3" />
-                      {/* <span>Created {formatDistanceToNow(createdDate, { addSuffix: true })}</span> */}
+                      <span>Created {formatDistanceToNow(createdDate, { addSuffix: true })}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock className="h-3 w-3" />
-                      <span>Duration: ~{Math.round(durationInFrame / 30)}s</span>
+                      <span>
+                        Duration: ~{Math.round(durationInFrame / 30)}s
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-1 pt-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs p-2">
                       AI Generated
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs p-2">
                       HD Quality
                     </Badge>
                     {isFavorite && (
-                      <Badge variant="destructive" className="text-xs">
+                      <Badge variant="destructive" className="text-xs p-2">
                         <Heart className="h-2 w-2 mr-1 fill-current" />
                         Favorite
                       </Badge>
@@ -416,32 +461,39 @@ const PlayerDialog = ({
               </Card>
 
               {/* Script Content */}
-              {videoData?.script && Array.isArray(videoData.script) && videoData.script.length > 0 && (
-                <Card className="border-0 shadow-sm bg-white/50">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">Script Content</h3>
-                    <div className="text-sm text-gray-700 leading-relaxed max-h-32 overflow-y-auto space-y-2">
-                      {videoData.script.map((segment, index) => (
-                        <div key={index} className="border-l-2 border-blue-200 pl-3 py-1">
-                          <p className="text-gray-800 font-medium">
-                            {segment.contentText || 'No content available'}
-                          </p>
-                          {segment.imagePrompt && (
-                            <p className="text-xs text-gray-500 mt-1 italic">
-                              Image: {segment.imagePrompt.substring(0, 60)}...
+              {videoData?.video?.script &&
+                Array.isArray(videoData.video.script) &&
+                videoData.video.script.length > 0 && (
+                  <Card className="border-0 shadow-sm bg-white/50">
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3">
+                        Script Content
+                      </h3>
+                      <div className="text-sm text-gray-700 leading-relaxed max-h-32 overflow-y-auto space-y-2">
+                        {videoData.video.script.map((segment, index) => (
+                          <div
+                            key={index}
+                            className="border-l-2 border-blue-200 pl-3 py-1"
+                          >
+                            <p className="text-gray-800 font-medium">
+                              {segment.contentText || "No content available"}
                             </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                            {segment.imagePrompt && (
+                              <p className="text-xs text-gray-500 mt-1 italic">
+                                Image: {segment.imagePrompt.substring(0, 60)}...
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl" 
+                <Button
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                   onClick={handleExport}
                   disabled={isExporting}
                 >
@@ -457,35 +509,44 @@ const PlayerDialog = ({
                     </>
                   )}
                 </Button>
-                
+
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1 rounded-full border-gray-200 hover:bg-gray-50"
                     onClick={() => setShowShareMenu(true)}
                   >
                     <Share2 className="h-4 w-4 mr-2" />
                     Share
                   </Button>
-                  
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="rounded-full border-gray-200 hover:bg-gray-50">
+                      <Button
+                        variant="outline"
+                        className="rounded-full border-gray-200 hover:bg-gray-50"
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={toggleFavorite}>
-                        <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
-                        {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                        <Heart
+                          className={`h-4 w-4 mr-2 ${
+                            isFavorite ? "fill-current text-red-500" : ""
+                          }`}
+                        />
+                        {isFavorite
+                          ? "Remove from Favorites"
+                          : "Add to Favorites"}
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Copy className="h-4 w-4 mr-2" />
                         Duplicate Video
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        className="text-red-600" 
+                      <DropdownMenuItem
+                        className="text-red-600"
                         onClick={() => {
                           handleDeleteVideo(videoData);
                           handleCancelCb();
@@ -497,9 +558,9 @@ const PlayerDialog = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                
-                <Button 
-                  variant="ghost" 
+
+                <Button
+                  variant="ghost"
                   className="w-full rounded-full text-gray-600 hover:text-gray-800"
                   onClick={handleCancelCb}
                 >
@@ -508,7 +569,7 @@ const PlayerDialog = ({
               </div>
             </div>
           </div>
-        </div>
+      </div>
       </DialogContent>
     </Dialog>
   );

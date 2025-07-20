@@ -190,8 +190,8 @@ const SideNav = ({ onClose }) => {
   };
 
   return (
-    <aside className="w-64 h-screen bg-white/80 backdrop-blur-xl border-r border-gray-100 shadow-xl overflow-y-auto">
-      <div className="p-6 pt-24">
+    <aside className="w-64 h-screen z-30 bg-white/80 backdrop-blur-xl border-r border-gray-100 shadow-xl overflow-y-auto">
+      <div className="p-6">
         {/* Quick Stats */}
         <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-gray-100">
           <div className="flex items-center justify-between mb-2">

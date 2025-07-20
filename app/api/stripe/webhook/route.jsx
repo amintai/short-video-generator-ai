@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { db } from "../../../../configs/db";
 import { Users } from "../../../../configs/schema";
 import { eq } from "drizzle-orm";
+import { db } from "../../../../configs/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-06-20",
