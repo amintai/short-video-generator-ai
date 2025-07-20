@@ -40,6 +40,7 @@ const RemotionVideo = ({
     return currentCaption ? currentCaption?.text : "";
   };
 
+
   return (
     <AbsoluteFill
       style={{

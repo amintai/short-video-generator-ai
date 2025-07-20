@@ -46,6 +46,9 @@ import { Separator } from "../../../@/components/ui/separator";
 import { Input } from "../../../@/components/ui/input";
 import { formatDistanceToNow } from "date-fns";
 import { sanitizeVideoName } from "../../../lib/videoUtils";
+import { db } from "../../../configs/db";
+import { VideoData } from "../../../configs/schema";
+import { eq } from "drizzle-orm";
 
 const PlayerDialog = ({
   playVideo,
@@ -68,12 +71,12 @@ const PlayerDialog = ({
 
   // Initialize editedName when videoData changes
   useEffect(() => {
-    if (videoData?.name) {
+    if (videoData?.video?.name) {
       setEditedName(videoData.name);
     } else {
       setEditedName("Untitled Video");
     }
-  }, [videoData?.name]);
+  }, [videoData?.video?.name]);
 
   const handleCancelCb = () => {
     if (location.pathname !== "/dashboard") {
@@ -92,7 +95,7 @@ const PlayerDialog = ({
       // In a real implementation, you'd render the video server-side and provide a download URL
       const link = document.createElement("a");
       link.href = "#"; // Replace with actual video URL
-      link.download = `video-${videoData.id || "generated"}.mp4`;
+      link.download = `video-${videoData.video.id || "generated"}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -104,14 +107,14 @@ const PlayerDialog = ({
     } finally {
       setIsExporting(false);
     }
-  }, [videoData]);
+  }, [videoData.video]);
 
   const handleShare = async (platform) => {
-    const videoUrl = `${window.location.origin}/public/video?video=${videoData.id}`;
+    const videoUrl = `${window.location.origin}/public/video?video=${videoData.video.id}`;
     const title = "Check out this amazing AI-generated video!";
     const scriptText =
-      Array.isArray(videoData.script) && videoData.script.length > 0
-        ? videoData.script
+      Array.isArray(videoData.video.script) && videoData.video.script.length > 0
+        ? videoData.video.script
             .map((segment) => segment.contentText)
             .join(" ")
             .substring(0, 100)
@@ -165,9 +168,9 @@ const PlayerDialog = ({
   };
 
   const handleNameUpdate = async () => {
-    if (!editedName.trim() || editedName === videoData?.name) {
+    if (!editedName.trim() || editedName === videoData?.video?.name) {
       setIsEditingName(false);
-      setEditedName(videoData?.name || "Untitled Video");
+      setEditedName(videoData?.video?.name || "Untitled Video");
       return;
     }
 
@@ -176,17 +179,14 @@ const PlayerDialog = ({
       const sanitizedName = sanitizeVideoName(editedName);
 
       // Import database functions dynamically
-      const { db } = await import("../../../../configs/db");
-      const { VideoData } = await import("../../../../configs/schema");
-      const { eq } = await import("drizzle-orm");
 
       await db
         .update(VideoData)
         .set({ name: sanitizedName })
-        .where(eq(VideoData.id, videoData.id));
+        .where(eq(VideoData.id, videoData.video.id));
 
       // Update local state
-      videoData.name = sanitizedName;
+      videoData.video.name = sanitizedName;
       setEditedName(sanitizedName);
       setIsEditingName(false);
 
@@ -194,7 +194,7 @@ const PlayerDialog = ({
     } catch (error) {
       console.error("Error updating video name:", error);
       toast.error("Failed to update video name");
-      setEditedName(videoData?.name || "Untitled Video");
+      setEditedName(videoData?.video?.name || "Untitled Video");
     } finally {
       setIsUpdatingName(false);
     }
@@ -202,12 +202,12 @@ const PlayerDialog = ({
 
   const handleEditName = () => {
     setIsEditingName(true);
-    setEditedName(videoData?.name || "Untitled Video");
+    setEditedName(videoData?.video?.name || "Untitled Video");
   };
 
   const handleCancelEdit = () => {
     setIsEditingName(false);
-    setEditedName(videoData?.name || "Untitled Video");
+    setEditedName(videoData?.video?.name || "Untitled Video");
   };
 
   if (isLoading) {
@@ -223,8 +223,8 @@ const PlayerDialog = ({
     );
   }
 
-  const createdDate = videoData?.createdAt
-    ? new Date(videoData.createdAt)
+  const createdDate = videoData?.video?.createdAt
+    ? new Date(videoData.video.createdAt)
     : new Date();
 
   return (
@@ -241,7 +241,7 @@ const PlayerDialog = ({
                 AI Generated Video
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600">
-                {/* Created {formatDistanceToNow(createdDate, { addSuffix: true })} */}
+                Created {formatDistanceToNow(createdDate, { addSuffix: true })}
               </DialogDescription>
             </div>
           </div>
@@ -343,7 +343,7 @@ const PlayerDialog = ({
                 compositionHeight={500}
                 fps={30}
                 inputProps={{
-                  ...videoData,
+                  ...videoData.video,
                   setDurationInFrame: (frameValue) =>
                     setDurationInFrame(frameValue),
                 }}
@@ -419,7 +419,7 @@ const PlayerDialog = ({
                     </div>
                   ) : (
                     <p className="text-gray-700 font-medium">
-                      {videoData?.name || "Untitled Video"}
+                      {videoData?.video?.name || "Untitled Video"}
                     </p>
                   )}
                 </CardContent>
@@ -461,16 +461,16 @@ const PlayerDialog = ({
               </Card>
 
               {/* Script Content */}
-              {videoData?.script &&
-                Array.isArray(videoData.script) &&
-                videoData.script.length > 0 && (
+              {videoData?.video?.script &&
+                Array.isArray(videoData.video.script) &&
+                videoData.video.script.length > 0 && (
                   <Card className="border-0 shadow-sm bg-white/50">
                     <CardContent className="p-4">
                       <h3 className="font-semibold text-gray-900 mb-3">
                         Script Content
                       </h3>
                       <div className="text-sm text-gray-700 leading-relaxed max-h-32 overflow-y-auto space-y-2">
-                        {videoData.script.map((segment, index) => (
+                        {videoData.video.script.map((segment, index) => (
                           <div
                             key={index}
                             className="border-l-2 border-blue-200 pl-3 py-1"
@@ -569,7 +569,7 @@ const PlayerDialog = ({
               </div>
             </div>
           </div>
-        </div>
+      </div>
       </DialogContent>
     </Dialog>
   );

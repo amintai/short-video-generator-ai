@@ -21,11 +21,11 @@ const Analytics = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {videoList.map((video) => (
-            <Card key={video.id} className="shadow-lg">
+          {videoList.map((item) => (
+            <Card key={item.video.id} className="shadow-lg">
               <CardHeader className="flex justify-between items-center pb-4">
                 <div>
-                  <CardTitle className="text-xl font-bold">{video.name}</CardTitle>
+                  <CardTitle className="text-xl font-bold">{item.video.name}</CardTitle>
                   {/* <p className="text-sm text-gray-500">{video.createdAt}</p> */}
                 </div>
                 <BarChart className="w-7 h-7 text-purple-600" />
@@ -34,15 +34,15 @@ const Analytics = () => {
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3">
                     <Eye className="w-5 h-5 text-blue-600" />
-                    <span className="text-lg font-semibold">{video.views} Views</span>
+                    <span className="text-lg font-semibold">{item.video.views} Views</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Download className="w-5 h-5 text-green-600" />
-                    <span className="text-lg font-semibold">{video.downloads} Downloads</span>
+                    <span className="text-lg font-semibold">{item.video.downloads} Downloads</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Share className="w-5 h-5 text-yellow-600" />
-                    <span className="text-lg font-semibold">{video.shares} Shares</span>
+                    <span className="text-lg font-semibold">{item.video.shares} Shares</span>
                   </li>
                 </ul>
               </CardContent>

@@ -15,7 +15,7 @@ const useGetVideo = ({ videoList }) => {
 
 
   const getVideoData = async (id) => {
-    const selectedVideoData = videoList.filter((item) => item.id === id);
+    const selectedVideoData = videoList.filter((item) => item.video.id === id);
     setVideoData(selectedVideoData[0]);
     setOpenPlayDialog(true);
   };

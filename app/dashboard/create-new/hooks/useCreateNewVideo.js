@@ -82,8 +82,8 @@ const useCreateNewVideo = () => {
 
     // Generate video name based on form data
     const videoName = generateSimpleVideoName(
-      formData.topic || 'Video Topic',
-      formData.duration || '30'
+      formData.topic || "Video Topic",
+      formData.duration || "30"
     );
 
     await db
@@ -95,6 +95,7 @@ const useCreateNewVideo = () => {
         captions: videoData?.captions,
         imageList: videoData?.imageList,
         createdBy: user?.primaryEmailAddress.emailAddress,
+
       })
       .returning({
         id: VideoData?.id,
@@ -141,11 +142,6 @@ Make the result visually immersive and narratively compelling, with each image p
           videoScript: res.data.result,
         }));
         setVideoScript(res.data.result);
-
-        let key = Object.keys(res.data.result);
-
-        console.log("Video Script Data:", res.data.result);
-
         generateAudioFile(res.data.result);
       });
   };
@@ -160,7 +156,6 @@ Make the result visually immersive and narratively compelling, with each image p
 
   //! Generate Audio Script
   const generateAudioFile = async (videoScriptData) => {
-    console.log("Generating audio file with script data:", videoScriptData);
     let script = "";
     const id = uuid4();
 
@@ -208,10 +203,17 @@ Make the result visually immersive and narratively compelling, with each image p
 
     for (const element of scriptData) {
       try {
-        const res = await axios.post("/api/generate-image", {
+        //! OLD IMAGE GENERATION LOGIC
+        // const res = await axios.post("/api/generate-image", {
+        //   prompt: element?.imagePrompt,
+        // });
+        const res = await axios.post("/api/stability", {
           prompt: element?.imagePrompt,
         });
-        images.push(res.data.result);
+        //!OLD
+        // images.push(res.data.result);
+        const downloadUrl = res.data.image;
+        images.push(downloadUrl);
       } catch (e) {
         console.log("Error:", e);
       }

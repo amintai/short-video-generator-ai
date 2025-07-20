@@ -1,10 +1,11 @@
 import { useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { db } from "../../../configs/db";
-import { VideoData } from "../../../configs/schema";
-import { eq } from "drizzle-orm";
+import { VideoData, Favorites } from "../../../configs/schema";
+import { eq, sql, leftJoin } from "drizzle-orm";
 import { throttle } from "lodash";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 const useVideoList = () => {
   const [videoList, setVideoList] = useState([]);
@@ -15,59 +16,75 @@ const useVideoList = () => {
     page: 1,
     perPage: 6,
     hasNext: true,
-    isInitialized: false
+    isInitialized: false,
   });
-  
+
   const isFirstLoad = useRef(true);
   const { user } = useUser();
+
 
   // Initialize data on first load
   useEffect(() => {
     if (user && isFirstLoad.current) {
-      console.log("Initializing video list");
       isFirstLoad.current = false;
       initializeVideoList();
     }
   }, [user]);
 
-  const notify = () => toast.success('Video Deleted Successfully.', {
-    position: 'top-right'
-  });
+
+  const notify = () =>
+    toast.success("Video Deleted Successfully.", {
+      position: "top-right",
+    });
 
   const initializeVideoList = async () => {
     if (!user?.primaryEmailAddress?.emailAddress) return;
-    
+
     setLoading(true);
-    setPagination(prev => ({ ...prev, page: 1, hasNext: true, isInitialized: false }));
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      hasNext: true,
+      isInitialized: false,
+    }));
     setVideoList([]);
-    
+
     try {
       const result = await db
-        .select()
+        .select({
+          video: VideoData,
+          isFavorite:
+            sql`CASE WHEN ${Favorites.id} IS NOT NULL THEN true ELSE false END`.as(
+              "isFavorite"
+            ),
+        })
         .from(VideoData)
+        .leftJoin(
+          Favorites,
+          sql`${VideoData.id} = ${Favorites.videoId} AND ${Favorites.userEmail} = ${user.primaryEmailAddress.emailAddress}`
+        )
         .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress))
         .limit(pagination.perPage)
         .offset(0);
 
-      console.log("Initial result", result);
 
       setVideoList(result);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         page: 2, // Next page to load
         hasNext: result.length === pagination.perPage,
-        isInitialized: true
+        isInitialized: true,
       }));
     } catch (error) {
       console.error("Error loading initial videos:", error);
-      toast.error('Failed to load videos');
+      toast.error("Failed to load videos");
     } finally {
       setLoading(false);
     }
   };
 
   const getVideoData = async (id) => {
-    const selectedVideoData = videoList.find((item) => item.id === id);
+    const selectedVideoData = videoList.find((item) => item.video.id === id);
     if (selectedVideoData) {
       setVideoData(selectedVideoData);
       setOpenPlayDialog(true);
@@ -80,41 +97,56 @@ const useVideoList = () => {
   };
 
   const loadMoreVideos = async () => {
-    if (!user?.primaryEmailAddress?.emailAddress || !pagination.hasNext || isLoading) {
+    if (
+      !user?.primaryEmailAddress?.emailAddress ||
+      !pagination.hasNext ||
+      isLoading
+    ) {
       return;
     }
 
-    console.log("Loading more videos, page:", pagination.page);
     setLoading(true);
 
     try {
       const result = await db
-        .select()
+        .select({
+          video: VideoData,
+          isFavorite:
+            sql`CASE WHEN ${Favorites.id} IS NOT NULL THEN true ELSE false END`.as(
+              "isFavorite"
+            ),
+        })
         .from(VideoData)
+        .leftJoin(
+          Favorites,
+          sql`${VideoData.id} = ${Favorites.videoId} AND ${Favorites.userEmail} = ${user.primaryEmailAddress.emailAddress}`
+        )
         .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress))
         .limit(pagination.perPage)
         .offset((pagination.page - 1) * pagination.perPage);
 
-      console.log("Load more result", result);
 
       if (result.length === 0) {
-        setPagination(prev => ({ ...prev, hasNext: false }));
+        setPagination((prev) => ({ ...prev, hasNext: false }));
       } else {
         // Filter out duplicates
-        const newVideos = result.filter(newVideo => 
-          !videoList.some(existingVideo => existingVideo.id === newVideo.id)
+        const newVideos = result.filter(
+          (newVideo) =>
+            !videoList.some(
+              (existingVideo) => existingVideo.video.id === newVideo?.id
+            )
         );
-        
-        setVideoList(prev => [...prev, ...newVideos]);
-        setPagination(prev => ({
+
+        setVideoList((prev) => [...prev, ...newVideos]);
+        setPagination((prev) => ({
           ...prev,
           page: prev.page + 1,
-          hasNext: result.length === pagination.perPage
+          hasNext: result.length === pagination.perPage,
         }));
       }
     } catch (error) {
       console.error("Error loading more videos:", error);
-      toast.error('Failed to load more videos');
+      toast.error("Failed to load more videos");
     } finally {
       setLoading(false);
     }
@@ -131,19 +163,21 @@ const useVideoList = () => {
 
   const handleDeleteVideo = async (videoToDelete) => {
     if (!videoToDelete?.id) return;
-    
+
     try {
       await db.delete(VideoData).where(eq(VideoData.id, videoToDelete.id));
-      
+
       // Remove from local state
-      setVideoList(prev => prev.filter(video => video.id !== videoToDelete.id));
+      setVideoList((prev) =>
+        prev.filter((video) => video.id !== videoToDelete.id)
+      );
       setOpenPlayDialog(false);
       setVideoData(null);
-      
+
       notify();
     } catch (error) {
       console.error("Error deleting video:", error);
-      toast.error('Failed to delete video');
+      toast.error("Failed to delete video");
     }
   };
 
@@ -155,20 +189,20 @@ const useVideoList = () => {
   };
 
   return [
-    { 
+    {
       videoList,
       isLoading,
       openPlayDialog,
       videoData,
-      hasNext: pagination.hasNext
-    }, 
-    { 
+      hasNext: pagination.hasNext,
+    },
+    {
       handleDeleteVideo,
       handleCancelVideoPlayerCb,
       throttledFetch,
       getVideoData,
-      refreshVideoList
-    }
+      refreshVideoList,
+    },
   ];
 };
 

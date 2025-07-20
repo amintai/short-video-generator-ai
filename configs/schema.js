@@ -41,7 +41,8 @@ export const VideoData = pgTable("videoData", {
   thumbnailUrl: varchar("thumbnailUrl"),
   status: varchar("status").default("completed"), // processing, completed, failed
   tags: varchar("tags").array(),
-  category: varchar("category")
+  category: varchar("category"),
+  isShared: boolean("isShared").default(false)
 });
 
 export const VideoAnalytics = pgTable("videoAnalytics", {
@@ -69,4 +70,11 @@ export const Templates = pgTable("templates", {
   usageCount: numeric('usageCount').default(0),
   rating: numeric('rating').default(0),
   tags: varchar("tags").array()
+});
+
+export const Favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  userEmail: varchar("userEmail").notNull(),
+  videoId: numeric("videoId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
 });

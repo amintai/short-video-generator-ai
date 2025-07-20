@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "../../../../configs/db";
 import { VideoData } from "../../../../configs/schema";
 import { eq } from "drizzle-orm";
+import { db } from "../../../../configs/db";
 
 export async function GET(request, { params }) {
   try {

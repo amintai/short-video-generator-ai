@@ -6,18 +6,41 @@ import Link from "next/link";
 import VideoList from "./_components/VideoList";
 import FullScreenLoader from "./_components/FullScreenLoader";
 import useVideoList from "./hooks/useVideoList";
-import { Search, Filter, Grid, List, Plus, Sparkles, Video, Clock, Calendar } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Grid,
+  List,
+  Plus,
+  Sparkles,
+  Video,
+  Clock,
+  Calendar,
+} from "lucide-react";
 import { Input } from "../../@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../@/components/ui/select";
 import { Badge } from "../../@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../@/components/ui/tabs";
 import { useSearchParams } from "next/navigation";
+import Replicate from "replicate";
 
 const Dashboard = () => {
   const [
     { videoList, openPlayDialog, videoData, hasNext, isLoading },
-    { handleDeleteVideo, handleCancelVideoPlayerCb, throttledFetch, getVideoData }
+    {
+      handleDeleteVideo,
+      handleCancelVideoPlayerCb,
+      throttledFetch,
+      getVideoData,
+    },
   ] = useVideoList();
+
+  const replicate = new Replicate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -27,15 +50,19 @@ const Dashboard = () => {
 
   // Handle shared video URL parameter
   useEffect(() => {
-    const videoId = searchParams.get('video');
+    const videoId = searchParams.get("video");
     if (videoId && videoList.length > 0 && !openPlayDialog) {
       // Find the video in the list and open it
-      const foundVideo = videoList.find(video => video.id === parseInt(videoId));
+      const foundVideo = videoList.find(
+        (video) => video.id === parseInt(videoId)
+      );
       if (foundVideo) {
         getVideoData(foundVideo.id);
       }
     }
   }, [searchParams, videoList, openPlayDialog, getVideoData]);
+
+
 
   // Filter and sort videos
   const filteredAndSortedVideos = useMemo(() => {
@@ -43,18 +70,22 @@ const Dashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
-
-      filtered = filtered.filter(video => {
-        const nameMatch = video.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      filtered = filtered.filter((video) => {
+        const nameMatch = video.name
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
         const idMatch = video.id?.toString().includes(searchTerm);
-        
+
         // Search through script content if it's an array
         let scriptMatch = false;
         if (Array.isArray(video.script)) {
-          const scriptText = video.script.map(segment => segment.contentText || '').join(' ').toLowerCase();
+          const scriptText = video.script
+            .map((segment) => segment.contentText || "")
+            .join(" ")
+            .toLowerCase();
           scriptMatch = scriptText.includes(searchTerm.toLowerCase());
         }
-        
+
         return nameMatch || idMatch || scriptMatch;
       });
     }
@@ -62,7 +93,7 @@ const Dashboard = () => {
     // Apply category filter
     if (filterBy !== "all") {
       // Add more filter logic based on your video properties
-      filtered = filtered.filter(video => {
+      filtered = filtered.filter((video) => {
         switch (filterBy) {
           case "recent":
             const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -110,7 +141,7 @@ const Dashboard = () => {
             Manage and organize your AI-generated videos
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Link href="/dashboard/create-new">
             <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
@@ -130,24 +161,28 @@ const Dashboard = () => {
                 <Video className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{videoList.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {videoList.length}
+                </p>
                 <p className="text-sm text-gray-600">Total Videos</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                 <Sparkles className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{filteredAndSortedVideos.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {filteredAndSortedVideos.length}
+                </p>
                 <p className="text-sm text-gray-600">Filtered Results</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -155,16 +190,20 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {videoList.filter(v => {
-                    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                    return new Date(v.createdAt) > oneWeekAgo;
-                  }).length}
+                  {
+                    videoList.filter((v) => {
+                      const oneWeekAgo = new Date(
+                        Date.now() - 7 * 24 * 60 * 60 * 1000
+                      );
+                      return new Date(v.createdAt) > oneWeekAgo;
+                    }).length
+                  }
                 </p>
                 <p className="text-sm text-gray-600">This Week</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
@@ -172,11 +211,13 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {videoList.filter(v => {
-                    const today = new Date();
-                    const videoDate = new Date(v.createdAt);
-                    return videoDate.toDateString() === today.toDateString();
-                  }).length}
+                  {
+                    videoList.filter((v) => {
+                      const today = new Date();
+                      const videoDate = new Date(v.createdAt);
+                      return videoDate.toDateString() === today.toDateString();
+                    }).length
+                  }
                 </p>
                 <p className="text-sm text-gray-600">Today</p>
               </div>
@@ -198,7 +239,7 @@ const Dashboard = () => {
               className="pl-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
-          
+
           {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-full lg:w-48 rounded-xl border-gray-200">
@@ -210,7 +251,7 @@ const Dashboard = () => {
               <SelectItem value="name">By Name</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* Filter */}
           <Select value={filterBy} onValueChange={setFilterBy}>
             <SelectTrigger className="w-full lg:w-48 rounded-xl border-gray-200">
@@ -223,7 +264,7 @@ const Dashboard = () => {
               <SelectItem value="shared">Shared</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* View Mode */}
           <div className="flex items-center gap-2">
             <Button
@@ -244,12 +285,12 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-        
+
         {/* Active Filters */}
         {(searchTerm || filterBy !== "all" || sortBy !== "newest") && (
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
             {searchTerm && (
-              <Badge variant="secondary" className="rounded-full">
+              <Badge variant="secondary" className="rounded-full p-2">
                 Search: {searchTerm}
                 <button
                   onClick={() => setSearchTerm("")}
@@ -260,7 +301,7 @@ const Dashboard = () => {
               </Badge>
             )}
             {filterBy !== "all" && (
-              <Badge variant="secondary" className="rounded-full">
+              <Badge variant="secondary" className="rounded-full p-2">
                 Filter: {filterBy}
                 <button
                   onClick={() => setFilterBy("all")}
@@ -271,7 +312,7 @@ const Dashboard = () => {
               </Badge>
             )}
             {sortBy !== "newest" && (
-              <Badge variant="secondary" className="rounded-full">
+              <Badge variant="secondary" className="rounded-full p-2">
                 Sort: {sortBy}
                 <button
                   onClick={() => setSortBy("newest")}
@@ -293,8 +334,12 @@ const Dashboard = () => {
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Search className="h-12 w-12 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No videos found</h3>
-          <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            No videos found
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Try adjusting your search or filter criteria
+          </p>
           <Button
             onClick={() => {
               setSearchTerm("");

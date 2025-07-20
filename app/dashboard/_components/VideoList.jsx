@@ -3,6 +3,7 @@ import { Thumbnail } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
 import InfiniteScroll from "react-infinite-scroller";
+import useFavorites from "../hooks/useFavorites";
 import {
   Play,
   Heart,
@@ -43,7 +44,7 @@ const VideoList = ({
   viewMode = "grid",
 }) => {
   const ref = useRef();
-  const [favorites, setFavorites] = useState(new Set());
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [loadingMore, setLoadingMore] = useState(false);
 
   const handleLoadMore = async () => {
@@ -54,18 +55,8 @@ const VideoList = ({
     }
   };
 
-  const toggleFavorite = (videoId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(videoId)) {
-      newFavorites.delete(videoId);
-    } else {
-      newFavorites.add(videoId);
-    }
-    setFavorites(newFavorites);
-  };
 
   const handleShare = async (video, platform) => {
-    console.log('Share video called with:', video, 'platform:', platform);
     const videoUrl = `${window.location.origin}/public/video?video=${video.id}`;
     const title = "Check out this AI-generated video!";
     const scriptText = Array.isArray(video.script) && video.script.length > 0 
@@ -73,9 +64,25 @@ const VideoList = ({
       : 'AI-generated video';
     const text = `Created with VideoAI: ${scriptText}...`;
 
-    console.log('Sharing URL:', videoUrl);
 
     try {
+      // Track the share in database first
+      const trackResponse = await fetch('/api/videos/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          platform: platform
+        })
+      });
+
+      if (!trackResponse.ok) {
+        console.error('Failed to track share:', await trackResponse.text());
+      }
+
+      // Proceed with the sharing action
       switch (platform) {
         case 'native':
           if (navigator.share) {
@@ -91,12 +98,15 @@ const VideoList = ({
           break;
         case 'twitter':
           window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(videoUrl)}`);
+          toast.success('Shared to Twitter!');
           break;
         case 'facebook':
           window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`);
+          toast.success('Shared to Facebook!');
           break;
         case 'whatsapp':
           window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${videoUrl}`)}`);
+          toast.success('Shared to WhatsApp!');
           break;
         default:
           break;
@@ -137,8 +147,10 @@ const VideoList = ({
   };
 
   const VideoCard = ({ item, index }) => {
-    const isFavorite = favorites.has(item.id);
-    const createdDate = new Date(item.createdAt || new Date());
+    const videoDetails = item.video;
+
+    const isVideoFavorite = isFavorite(videoDetails.id);
+    const createdDate = new Date(videoDetails.createdAt || new Date());
 
     return (
       <Card className="group bg-white/60 backdrop-blur-sm border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] overflow-hidden">
@@ -147,7 +159,7 @@ const VideoList = ({
           <div className="relative overflow-hidden">
             <div
               className="cursor-pointer"
-              onClick={() => getVideoData(item.id)}
+              onClick={() => getVideoData(videoDetails.id)}
             >
               <Thumbnail
                 ref={ref}
@@ -158,9 +170,8 @@ const VideoList = ({
                 frameToDisplay={30}
                 component={RemotionVideo}
                 inputProps={{
-                  ...item,
+                  ...videoDetails,
                   setDurationInFrame: (value) => {
-                    console.log("Duration in frame set to:", value);
                   },
                 }}
                 style={{
@@ -176,7 +187,7 @@ const VideoList = ({
               <Button
                 size="sm"
                 className="bg-white/90 hover:bg-white text-black rounded-full w-12 h-12 p-0"
-                onClick={() => getVideoData(item.id)}
+                onClick={() => getVideoData(videoDetails.id)}
               >
                 <Play className="h-5 w-5 ml-0.5" />
               </Button>
@@ -189,15 +200,15 @@ const VideoList = ({
                   size="sm"
                   variant="secondary"
                   className={`rounded-full w-8 h-8 p-0 ${
-                    isFavorite ? "text-red-500" : "text-gray-600"
+                    isVideoFavorite ? "text-red-500" : "text-gray-600"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(item.id);
+                    toggleFavorite(videoDetails.id);
                   }}
                 >
                   <Heart
-                    className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`}
+                    className={`h-4 w-4 ${isVideoFavorite ? "fill-current" : ""}`}
                   />
                 </Button>
 
@@ -218,24 +229,24 @@ const VideoList = ({
                     <div className="px-3 py-2 border-b">
                       <p className="font-medium text-sm">Share this video</p>
                     </div>
-                    <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                    <DropdownMenuItem onClick={() => handleShare(videoDetails, 'copy')}>
                       <Copy className="h-4 w-4 mr-2" />
                       Copy Link
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                    <DropdownMenuItem onClick={() => handleShare(videoDetails, 'native')}>
                       <Share2 className="h-4 w-4 mr-2" />
                       Native Share
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                    <DropdownMenuItem onClick={() => handleShare(videoDetails, 'twitter')}>
                       <Twitter className="h-4 w-4 mr-2" />
                       Share on Twitter
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                    <DropdownMenuItem onClick={() => handleShare(videoDetails, 'facebook')}>
                       <Facebook className="h-4 w-4 mr-2" />
                       Share on Facebook
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                    <DropdownMenuItem onClick={() => handleShare(videoDetails, 'whatsapp')}>
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Share on WhatsApp
                     </DropdownMenuItem>
@@ -254,15 +265,15 @@ const VideoList = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => getVideoData(item.id)}>
+                    <DropdownMenuItem onClick={() => getVideoData(videoDetails.id)}>
                       <Play className="h-4 w-4 mr-2" />
                       Play Video
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => shareVideo(item)}>
+                    <DropdownMenuItem onClick={() => shareVideo(videoDetails)}>
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadVideo(item)}>
+                    <DropdownMenuItem onClick={() => downloadVideo(videoDetails)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
@@ -276,24 +287,24 @@ const VideoList = ({
           <div className="p-4 space-y-3">
             <div className="space-y-2">
               <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm leading-tight">
-                {item.name || 'Untitled Video'}
+                {videoDetails.name || 'Untitled Video'}
               </h3>
 
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Calendar className="h-3 w-3" />
                 <span>
-                  {/* {formatDistanceToNow(createdDate, { addSuffix: true })} */}
+                  {formatDistanceToNow(createdDate, { addSuffix: true })}
                 </span>
               </div>
             </div>
 
             {/* Status badges */}
             <div className="flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs p-2">
                 AI Generated
               </Badge>
-              {isFavorite && (
-                <Badge variant="destructive" className="text-xs">
+              {isVideoFavorite && (
+                <Badge variant="destructive" className="text-xs p-2">
                   <Heart className="h-2 w-2 mr-1 fill-current" />
                   Favorite
                 </Badge>
@@ -305,7 +316,7 @@ const VideoList = ({
               <Button
                 size="sm"
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full"
-                onClick={() => getVideoData(item.id)}
+                onClick={() => getVideoData(videoDetails.id)}
               >
                 <Play className="h-3 w-3 mr-1" />
                 Play
@@ -327,24 +338,24 @@ const VideoList = ({
                   <div className="px-3 py-2 border-b">
                     <p className="font-medium text-sm">Share this video</p>
                   </div>
-                  <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                  <DropdownMenuItem onClick={() => handleShare(videoDetails, 'copy')}>
                     <Copy className="h-4 w-4 mr-2" />
                     Copy Link
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                  <DropdownMenuItem onClick={() => handleShare(videoDetails, 'native')}>
                     <Share2 className="h-4 w-4 mr-2" />
                     Native Share
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                  <DropdownMenuItem onClick={() => handleShare(videoDetails, 'twitter')}>
                     <Twitter className="h-4 w-4 mr-2" />
                     Share on Twitter
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                  <DropdownMenuItem onClick={() => handleShare(videoDetails, 'facebook')}>
                     <Facebook className="h-4 w-4 mr-2" />
                     Share on Facebook
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                  <DropdownMenuItem onClick={() => handleShare(videoDetails, 'whatsapp')}>
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Share on WhatsApp
                   </DropdownMenuItem>
@@ -358,10 +369,10 @@ const VideoList = ({
   };
 
   const ListItem = ({ item, index }) => {
-    const isFavorite = favorites.has(item.id);
+    const videoDetails = item.video;
+    const isVideoFavorite = isFavorite(videoDetails.id);
     const createdDate = new Date(item.createdAt || new Date());
 
-    console.log('createdDate',createdDate,formatDistanceToNow(createdDate, { addSuffix: true }))
     return (
       <Card className="group bg-white/60 backdrop-blur-sm border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden">
         <CardContent className="p-4">
@@ -370,7 +381,7 @@ const VideoList = ({
             <div className="relative flex-shrink-0">
               <div
                 className="cursor-pointer"
-                onClick={() => getVideoData(item.id)}
+                onClick={() => getVideoData(videoDetails.id)}
               >
                 <Thumbnail
                   ref={ref}
@@ -381,7 +392,7 @@ const VideoList = ({
                   frameToDisplay={30}
                   component={RemotionVideo}
                   inputProps={{
-                    ...item,
+                    ...videoDetails,
                     setDurationInFrame: (value) => {
                       console.log("Duration in frame set to:", value);
                     },
@@ -399,7 +410,7 @@ const VideoList = ({
                 <Button
                   size="sm"
                   className="bg-white/90 hover:bg-white text-black rounded-full w-10 h-10 p-0"
-                  onClick={() => getVideoData(item.id)}
+                  onClick={() => getVideoData(videoDetails.id)}
                 >
                   <Play className="h-4 w-4 ml-0.5" />
                 </Button>
@@ -410,7 +421,7 @@ const VideoList = ({
             <div className="flex-1 space-y-3">
               <div>
                 <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2">
-                  {item.name || 'Untitled Video'}
+                  {videoDetails.name || 'Untitled Video'}
                 </h3>
 
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
@@ -428,11 +439,11 @@ const VideoList = ({
 
                 {/* Badges */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge variant="secondary" className="text-xs p-1">
+                  <Badge variant="secondary" className="text-xs p-2">
                     AI Generated
                   </Badge>
-                  {isFavorite && (
-                    <Badge variant="destructive" className="text-xs p-1">
+                  {isVideoFavorite && (
+                    <Badge variant="destructive" className="text-xs p-2">
                       <Heart className="h-2 w-2 mr-1 fill-current" />
                       Favorite
                     </Badge>
@@ -446,7 +457,7 @@ const VideoList = ({
                   <Button
                     size="sm"
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full"
-                    onClick={() => getVideoData(item.id)}
+                    onClick={() => getVideoData(videoDetails.id)}
                   >
                     <Play className="h-3 w-3 mr-1" />
                     Play
@@ -470,24 +481,24 @@ const VideoList = ({
                       <div className="px-3 py-2 border-b">
                         <p className="font-medium text-sm">Share this video</p>
                       </div>
-                      <DropdownMenuItem onClick={() => handleShare(item, 'copy')}>
+                      <DropdownMenuItem onClick={() => handleShare(videoDetails, 'copy')}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Link
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare(item, 'native')}>
+                      <DropdownMenuItem onClick={() => handleShare(videoDetails, 'native')}>
                         <Share2 className="h-4 w-4 mr-2" />
                         Native Share
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleShare(item, 'twitter')}>
+                      <DropdownMenuItem onClick={() => handleShare(videoDetails, 'twitter')}>
                         <Twitter className="h-4 w-4 mr-2" />
                         Share on Twitter
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare(item, 'facebook')}>
+                      <DropdownMenuItem onClick={() => handleShare(videoDetails, 'facebook')}>
                         <Facebook className="h-4 w-4 mr-2" />
                         Share on Facebook
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare(item, 'whatsapp')}>
+                      <DropdownMenuItem onClick={() => handleShare(videoDetails, 'whatsapp')}>
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Share on WhatsApp
                       </DropdownMenuItem>
@@ -500,12 +511,12 @@ const VideoList = ({
                     size="sm"
                     variant="ghost"
                     className={`rounded-full w-8 h-8 p-0 ${
-                      isFavorite ? "text-red-500" : "text-gray-400"
+                      isVideoFavorite ? "text-red-500" : "text-gray-400"
                     }`}
-                    onClick={() => toggleFavorite(item.id)}
+                    onClick={() => toggleFavorite(videoDetails.id)}
                   >
                     <Heart
-                      className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`}
+                      className={`h-4 w-4 ${isVideoFavorite ? "fill-current" : ""}`}
                     />
                   </Button>
 
@@ -520,7 +531,7 @@ const VideoList = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => downloadVideo(item)}>
+                      <DropdownMenuItem onClick={() => downloadVideo(videoDetails)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </DropdownMenuItem>
@@ -556,7 +567,7 @@ const VideoList = ({
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {videoList.map((item, index) => (
               <VideoCard
-                key={`${item.id}-${index}`}
+                key={`${item?.video?.id}-${index}`}
                 item={item}
                 index={index}
               />
@@ -565,7 +576,7 @@ const VideoList = ({
         ) : (
           <div className="space-y-4">
             {videoList.map((item, index) => (
-              <ListItem key={`${item.id}-${index}`} item={item} index={index} />
+              <ListItem key={`${item.video.id}-${index}`} item={item} index={index} />
             ))}
           </div>
         )}
