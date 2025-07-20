@@ -167,9 +167,12 @@ const useVideoList = () => {
     try {
       await db.delete(VideoData).where(eq(VideoData.id, videoToDelete.id));
 
-      // Remove from local state
+      // Remove from local state - handle both old and new data structures
       setVideoList((prev) =>
-        prev.filter((video) => video.id !== videoToDelete.id)
+        prev.filter((item) => {
+          const videoId = item.video ? item.video.id : item.id;
+          return videoId !== videoToDelete.id;
+        })
       );
       setOpenPlayDialog(false);
       setVideoData(null);

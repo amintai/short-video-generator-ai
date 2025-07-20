@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Thumbnail } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import InfiniteScroll from "react-infinite-scroller";
 import useFavorites from "../hooks/useFavorites";
 import {
@@ -16,6 +17,7 @@ import {
   Twitter,
   Facebook,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
 import { Button } from "../../../@/components/ui/button";
 import {
@@ -46,6 +48,32 @@ const VideoList = ({
   const ref = useRef();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [loadingMore, setLoadingMore] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, video: null });
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  console.log('deleteDialog',deleteDialog)
+  // Handle delete confirmation
+  const handleDeleteClick = (video) => {
+    setDeleteDialog({ isOpen: true, video });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.video) return;
+    
+    setIsDeleting(true);
+    try {
+      await handleDeleteVideo(deleteDialog.video);
+      setDeleteDialog({ isOpen: false, video: null });
+    } catch (error) {
+      console.error('Delete failed:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({ isOpen: false, video: null });
+  };
 
   const handleLoadMore = async () => {
     if (!loadingMore && hasNext) {
@@ -276,6 +304,11 @@ const VideoList = ({
                     <DropdownMenuItem onClick={() => downloadVideo(videoDetails)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(videoDetails)}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Video
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -531,11 +564,12 @@ const VideoList = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => downloadVideo(videoDetails)}>
+                      <DropdownMenuItem className="cursor-pointer" onClick={() => downloadVideo(videoDetails)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={() => handleDeleteClick(videoDetails)}>
+                        <Trash2 className="h-4 w-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -591,6 +625,15 @@ const VideoList = ({
           videoData={videoData}
         />
       )}
+
+      <ConfirmDeleteDialog 
+        isOpen={deleteDialog.isOpen}
+        onConfirm={handleDeleteConfirm}
+        onClose={handleDeleteCancel}
+        videoName={deleteDialog?.video?.video?.name ?? ''}
+        key={Math.random()}
+        isDeleting={isDeleting}
+      />
     </>
   );
 };
