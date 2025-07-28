@@ -3,32 +3,61 @@ import { NextResponse } from "next/server";
 import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
+
 const client = new textToSpeech.TextToSpeechClient({
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
 });
 
 
 export async function POST(req) {
-  const { text, id } = await req.json();
+  const { text, id, language, contentType } = await req.json();
 
   const storageRef = ref(storage, "ai-short-video-files/" + id + ".mp3");
 
+  const voiceMap = {
+    en: { languageCode: "en-US", name: "en-US-Wavenet-F", gender: "FEMALE" },
+    hi: { languageCode: "hi-IN", name: "hi-IN-Wavenet-A", gender: "MALE" },
+    es: { languageCode: "es-ES", name: "es-ES-Wavenet-B", gender: "MALE" },
+    fr: { languageCode: "fr-FR", name: "fr-FR-Wavenet-C", gender: "FEMALE" },
+    de: { languageCode: "de-DE", name: "de-DE-Wavenet-B", gender: "MALE" },
+  };
+
+  const styleConfig = {
+    "Custom Prompt": { rate: "1.0", pitch: "0st" },
+    "Random AI Story": { rate: "1.1", pitch: "+1st" },
+    "Scary Story": { rate: "0.9", pitch: "-1st" },
+    "Historical Facts": { rate: "1.0", pitch: "0st" },
+    "Bed Time Story": { rate: "0.9", pitch: "+2st" },
+    "Motivational": { rate: "1.2", pitch: "+2st" },
+    "Fun Facts": { rate: "1.1", pitch: "+1st" },
+  };
+
+  const voice = voiceMap[language] || voiceMap.en;
+  const style = styleConfig[contentType] || styleConfig["Custom Prompt"];
+
   const request = {
     input: {
-      text: text,
+      ssml: `
+        <speak>
+          <prosody rate="${style.rate}" pitch="${style.pitch}">
+            ${text}
+          </prosody>
+        </speak>
+      `,
     },
     voice: {
-      languageCode: "en-US",
-      ssmlGender: "FEMAIL",
+      languageCode: voice.languageCode,
+      name: voice.name,
+      ssmlGender: voice.gender,
     },
     audioConfig: {
       audioEncoding: "MP3",
+      speakingRate: parseFloat(style.rate),
+      pitch: 0.0,
     },
   };
 
   const [response] = await client.synthesizeSpeech(request);
-
-  //! To store audio in firebase
   const audioBuffer = Buffer.from(response.audioContent, "binary");
 
   await uploadBytes(storageRef, audioBuffer, {
@@ -36,10 +65,6 @@ export async function POST(req) {
   });
 
   const downloadUrl = await getDownloadURL(storageRef);
-
-  //! To save audio in local
-  //   const writeFile = util.promisify(fs.writeFile);
-  //   await writeFile("output.mp3", response.audioContent, "binary");
 
   return NextResponse.json({
     Result: "Success",

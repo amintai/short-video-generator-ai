@@ -1,28 +1,34 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
-import userReducer from './sclices/counterSlice'
-import storage from 'redux-persist/lib/storage'
+import userReducer from './sclices/counterSlice';
+import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
-
 
 const persistConfig = {
   key: 'root',
-  storage
+  storage,
 };
 
 const reducers = combineReducers({
-    user: userReducer,
- });
+  user: userReducer,
+});
 
 const persistedReducer = persistReducer(persistConfig, reducers);
 
+const isDevEnv = process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) => {
-    return getDefaultMiddleware({
+    const middlewares = getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(logger);
+    });
+
+    if (isDevEnv) {
+      middlewares.push(logger);
+    }
+
+    return middlewares;
   },
 });
 

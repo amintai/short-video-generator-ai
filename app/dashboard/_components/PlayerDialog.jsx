@@ -57,6 +57,7 @@ const PlayerDialog = ({
   videoData,
   handleDeleteVideo = () => {},
 }) => {
+
   const [durationInFrame, setDurationInFrame] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);

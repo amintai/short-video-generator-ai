@@ -80,32 +80,49 @@ const useCreateNewVideo = () => {
   const saveVideoData = async (videoData) => {
     setAPILoading(true);
 
-    // Generate video name based on form data
-    const videoName = generateSimpleVideoName(
-      formData.topic || "Video Topic",
-      formData.duration || "30"
-    );
+    try {
+      const videoName = generateSimpleVideoName(
+        formData.topic || "Video Topic",
+        formData.duration || "30"
+      );
 
-    await db
-      .insert(VideoData)
-      .values({
-        name: videoName,
-        script: videoData?.videoScript,
-        audioFileUrl: videoData?.audioFileUrl,
-        captions: videoData?.captions,
-        imageList: videoData?.imageList,
-        createdBy: user?.primaryEmailAddress.emailAddress,
+      // Insert video and get the inserted ID
+      const [inserted] = await db
+        .insert(VideoData)
+        .values({
+          name: videoName,
+          script: videoData?.videoScript,
+          audioFileUrl: videoData?.audioFileUrl,
+          captions: videoData?.captions,
+          imageList: videoData?.imageList,
+          createdBy: user?.primaryEmailAddress.emailAddress,
+        })
+        .returning({
+          id: VideoData.id,
+        });
 
-      })
-      .returning({
-        id: VideoData?.id,
-      });
+      // Fetch full record using returned ID
+      const [fullVideo] = await db
+        .select()
+        .from(VideoData)
+        .where(eq(VideoData.id, inserted.id));
 
-    setVideoContent(videoData);
-    setVideoData({});
+      // Return formatted object with `isFavorite`
+      const finalVideo = {
+        video: fullVideo,
+        isFavorite: false,
+      };
 
-    setPlayVideo(true);
-    setAPILoading(false);
+      // Update your state with the same structure used in video list
+      setVideoContent(finalVideo);
+      setVideoData({});
+      setPlayVideo(true);
+    } catch (error) {
+      console.error("Error saving video:", error);
+      toast.error("Failed to save video");
+    } finally {
+      setAPILoading(false);
+    }
   };
 
   //! Generate Video Script
@@ -166,6 +183,8 @@ Make the result visually immersive and narratively compelling, with each image p
     const res = await axios.post("/api/generate-audio", {
       text: script,
       id: id,
+      language: formData.language,
+      contentType: formData.contentType,
       timeout: 30000,
     });
 
@@ -204,16 +223,16 @@ Make the result visually immersive and narratively compelling, with each image p
     for (const element of scriptData) {
       try {
         //! OLD IMAGE GENERATION LOGIC
-        // const res = await axios.post("/api/generate-image", {
-        //   prompt: element?.imagePrompt,
-        // });
-        const res = await axios.post("/api/stability", {
+        const res = await axios.post("/api/generate-image", {
           prompt: element?.imagePrompt,
         });
+        // const res = await axios.post("/api/stability", {
+        //   prompt: element?.imagePrompt,
+        // });
         //!OLD
-        // images.push(res.data.result);
-        const downloadUrl = res.data.image;
-        images.push(downloadUrl);
+        images.push(res.data.result);
+        // const downloadUrl = res.data.image;
+        // images.push(downloadUrl);
       } catch (e) {
         console.log("Error:", e);
       }

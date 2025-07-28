@@ -51,7 +51,6 @@ const VideoList = ({
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, video: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  console.log('deleteDialog',deleteDialog)
   // Handle delete confirmation
   const handleDeleteClick = (video) => {
     setDeleteDialog({ isOpen: true, video });
@@ -427,7 +426,7 @@ const VideoList = ({
                   inputProps={{
                     ...videoDetails,
                     setDurationInFrame: (value) => {
-                      console.log("Duration in frame set to:", value);
+                      console.warn("Duration in frame set to:", value);
                     },
                   }}
                   style={{
