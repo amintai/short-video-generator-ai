@@ -28,6 +28,7 @@ import {
 import { Badge } from "../../@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import Replicate from "replicate";
+import OnboardingTour from "../_components/OnboardingTour";
 
 const Dashboard = () => {
   const [
@@ -131,6 +132,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
+      
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="space-y-2">
@@ -144,14 +146,14 @@ const Dashboard = () => {
 
         <div className="flex items-center gap-3">
           <Link href="/dashboard/create-new">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+            <Button className="create-video-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
               <Plus className="h-5 w-5 mr-2" />
               Create New Video
             </Button>
           </Link>
         </div>
       </div>
-
+<OnboardingTour />
       {/* Stats Cards */}
       {videoList.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -168,6 +170,8 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          
 
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">

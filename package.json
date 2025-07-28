@@ -43,6 +43,7 @@
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-infinite-scroller": "^1.2.6",
+    "react-joyride": "^2.9.3",
     "react-redux": "^9.2.0",
     "redux-logger": "^3.0.6",
     "redux-persist": "^6.0.0",
