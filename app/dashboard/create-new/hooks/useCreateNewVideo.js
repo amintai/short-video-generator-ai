@@ -128,26 +128,26 @@ const useCreateNewVideo = () => {
   //! Generate Video Script
   const getVideoScript = async () => {
     setAPILoading(true);
-    // const prompt = `Write a script to generate ${formData.duration} seconds video on topic: ${formData.topic} along with AI image prompt in ${formData.imageStyle} format for each and give me result in JSON format with imagePrompt and ContetText as field, No Plain Text it should not start with scene keyword.`;
-    const prompt = `Generate a complete and highly detailed script in ${formData.language} language for a video that is exactly ${formData.duration} seconds long, centered around the topic: "${formData.topic}".  
+    const prompt = `Generate a highly detailed and compelling script in the "${formData.language}" language for a video that is exactly ${formData.duration} seconds long, centered around the topic: "${formData.topic}". 
 
-Divide the script logically based on the time allocation, ensuring smooth transitions and narrative flow throughout the entire video duration.  
+Break the content into natural narrative segments based on time—such as opening hook, body, and conclusion—ensuring a smooth and immersive storytelling experience from start to finish.
 
-For **each segment**, include the following in the output:
-1. **imagePrompt**: A vivid, detailed AI image generation prompt in the "${formData.imageStyle}" style. This should describe the visual scene clearly, specifying mood, composition, lighting, subjects, and any relevant background elements.
-2. **contentText**: A concise, engaging, and informative narration text for that segment. The tone should be audience-appropriate (e.g., professional, casual, inspirational) and aligned with the topic.
+For **each time-segment**, provide the following:
+1. **imagePrompt**: A vivid, detailed image description in "${formData.imageStyle}" style, optimized for AI generation. It should specify atmosphere, environment, characters, objects, lighting, and mood.
+2. **contentText**: Engaging, human-like narration that resonates with the viewer. Make it realistic, emotionally engaging, and relevant to the viewer’s everyday life or curiosity. Avoid generic facts—be specific, add real-world context, and use storytelling techniques.
 
-**Constraints**:
-- Total script length must be timed to fit exactly within ${formData.duration} seconds.
-- Use natural segmentation (e.g., intro, development, conclusion) without explicitly labeling them.
-- Do NOT use labels like "Scene 1", "Segment", etc.
-- Do NOT wrap the output inside any object or property (e.g., no { "segments": [...] }).
-- The output must be strictly in **valid JSON format**, containing only an **array of objects**, each with:
+### Additional Rules:
+- **DO NOT** include any timestamps (e.g., “(0–5 seconds)”) or labels inside the "contentText".
+- The total content must **perfectly fit** within ${formData.duration} seconds.
+- Use a tone appropriate for the topic: inspiring, educational, thrilling, emotional, or funny.
+- Do NOT include any labels (like “Intro”, “Scene 1”, etc.)
+- Do NOT wrap the output in an object—return **only a JSON array** of:
   - "imagePrompt": string
   - "contentText": string
-- Do not include any explanation, headings, or comments outside the JSON array.
+- No additional explanation or commentary—just pure JSON.
 
-Make the result visually immersive and narratively compelling, with each image prompt complementing the corresponding narration.`;
+Ensure every image prompt clearly reflects and enriches its corresponding narration text. Each segment should naturally lead into the next.`;
+
 
     await axios
       .post("/api/get-video-script", {
