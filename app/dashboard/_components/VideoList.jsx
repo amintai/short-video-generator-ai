@@ -44,6 +44,8 @@ const VideoList = ({
   getVideoData,
   isLoading,
   viewMode = "grid",
+  setVideoData = () => {}, // Added setVideoData prop
+  setVideoList = () => {}, // Added setVideoList prop
 }) => {
   const ref = useRef();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -151,7 +153,6 @@ const VideoList = ({
   };
 
   const downloadVideo = async (video) => {
-    toast.loading('Preparing video for download...');
     try {
       // For now, we'll simulate a download process
       // In a real implementation, you would call your video export API
@@ -426,7 +427,6 @@ const VideoList = ({
                   inputProps={{
                     ...videoDetails,
                     setDurationInFrame: (value) => {
-                      console.warn("Duration in frame set to:", value);
                     },
                   }}
                   style={{
@@ -622,6 +622,8 @@ const VideoList = ({
           playVideo={openPlayDialog}
           isLoading={isLoading}
           videoData={videoData}
+          setVideoData={setVideoData}
+          setVideoList={setVideoList}
         />
       )}
 

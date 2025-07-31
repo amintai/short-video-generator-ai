@@ -83,6 +83,7 @@ const useVideoList = () => {
     }
   };
 
+
   const getVideoData = async (id) => {
     const selectedVideoData = videoList.find((item) => item.video.id === id);
     if (selectedVideoData) {
@@ -97,24 +98,14 @@ const useVideoList = () => {
   };
 
   const loadMoreVideos = async () => {
-    if (
-      !user?.primaryEmailAddress?.emailAddress ||
-      !pagination.hasNext ||
-      isLoading
-    ) {
-      return;
-    }
-
     setLoading(true);
-
     try {
+      const currentPage = pagination.page;
+
       const result = await db
         .select({
           video: VideoData,
-          isFavorite:
-            sql`CASE WHEN ${Favorites.id} IS NOT NULL THEN true ELSE false END`.as(
-              "isFavorite"
-            ),
+          isFavorite: sql`CASE WHEN ${Favorites.id} IS NOT NULL THEN true ELSE false END`.as("isFavorite"),
         })
         .from(VideoData)
         .leftJoin(
@@ -123,27 +114,25 @@ const useVideoList = () => {
         )
         .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress))
         .limit(pagination.perPage)
-        .offset((pagination.page - 1) * pagination.perPage);
-
+        .offset((currentPage - 1) * pagination.perPage);
 
       if (result.length === 0) {
         setPagination((prev) => ({ ...prev, hasNext: false }));
-      } else {
-        // Filter out duplicates
-        const newVideos = result.filter(
-          (newVideo) =>
-            !videoList.some(
-              (existingVideo) => existingVideo.video.id === newVideo?.id
-            )
-        );
-
-        setVideoList((prev) => [...prev, ...newVideos]);
-        setPagination((prev) => ({
-          ...prev,
-          page: prev.page + 1,
-          hasNext: result.length === pagination.perPage,
-        }));
+        return;
       }
+
+      // ✅ De-duplicate using Set
+      setVideoList((prev) => {
+        const existingIds = new Set(prev.map((v) => v.video.id));
+        const uniqueNew = result.filter((v) => !existingIds.has(v.video.id));
+        return [...prev, ...uniqueNew];
+      });
+
+      setPagination((prev) => ({
+        ...prev,
+        page: prev.page + 1,
+        hasNext: result.length === pagination.perPage,
+      }));
     } catch (error) {
       console.error("Error loading more videos:", error);
       toast.error("Failed to load more videos");
@@ -152,14 +141,17 @@ const useVideoList = () => {
     }
   };
 
+
   const throttledFetch = useCallback(
     throttle(() => {
-      if (pagination.hasNext && pagination.isInitialized) {
+      if (pagination.hasNext && pagination.isInitialized && !isLoading) {
         loadMoreVideos();
       }
     }, 1000),
-    [pagination.hasNext, pagination.isInitialized, pagination.page, user]
+    [pagination.hasNext, pagination.isInitialized, isLoading]
   );
+
+
 
   const handleDeleteVideo = async (videoToDelete) => {
     if (!videoToDelete?.id) return;
@@ -170,7 +162,7 @@ const useVideoList = () => {
       // Remove from local state - handle both old and new data structures
       setVideoList((prev) =>
         prev.filter((item) => {
-          const videoId = item.video ? item.video.id : item.id;
+          const videoId = item.video.id
           return videoId !== videoToDelete.id;
         })
       );
@@ -205,6 +197,8 @@ const useVideoList = () => {
       throttledFetch,
       getVideoData,
       refreshVideoList,
+      setVideoData,
+      setVideoList
     },
   ];
 };

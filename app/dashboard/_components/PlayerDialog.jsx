@@ -55,13 +55,16 @@ const PlayerDialog = ({
   handleCancelVideoPlayerCb,
   isLoading,
   videoData,
-  handleDeleteVideo = () => {},
+  handleDeleteVideo = () => { },
+  setVideoData = () => { }, // Function to update video data in parent component
+  setVideoList = () => { }, // Function to update video list in parent component
 }) => {
+
 
   const [durationInFrame, setDurationInFrame] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(videoData.isFavorite || false);
   const [isExporting, setIsExporting] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -116,9 +119,9 @@ const PlayerDialog = ({
     const scriptText =
       Array.isArray(videoData.video.script) && videoData.video.script.length > 0
         ? videoData.video.script
-            .map((segment) => segment.contentText)
-            .join(" ")
-            .substring(0, 100)
+          .map((segment) => segment.contentText)
+          .join(" ")
+          .substring(0, 100)
         : "AI-generated video";
     const text = `Created with VideoAI: ${scriptText}...`;
 
@@ -169,35 +172,58 @@ const PlayerDialog = ({
   };
 
   const handleNameUpdate = async () => {
-    if (!editedName.trim() || editedName === videoData?.video?.name) {
+    const currentName = videoData?.video?.name || "Untitled Video";
+    const trimmedName = editedName.trim();
+
+    // No change or empty input
+    if (!trimmedName || trimmedName === currentName) {
+      setEditedName(currentName);
       setIsEditingName(false);
-      setEditedName(videoData?.video?.name || "Untitled Video");
       return;
     }
 
     setIsUpdatingName(true);
+
     try {
-      const sanitizedName = sanitizeVideoName(editedName);
+      const sanitizedName = sanitizeVideoName(trimmedName);
 
-      // Import database functions dynamically
-
+      // Update video name in DB
       await db
         .update(VideoData)
         .set({ name: sanitizedName })
         .where(eq(VideoData.id, videoData.video.id));
 
-      // Update local state
-      videoData.video.name = sanitizedName;
-      setEditedName(sanitizedName);
-      setIsEditingName(false);
+      // Optionally re-fetch full updated record
+      const [updated] = await db
+        .select()
+        .from(VideoData)
+        .where(eq(VideoData.id, videoData.video.id));
 
+
+      // Update local state
+      const updatedVideo = {
+        ...videoData,
+        video: updated,
+      };
+
+
+      setVideoList((prevList) =>
+        prevList.map((item) =>
+          item.video.id === videoData.video.id ? updatedVideo : item
+        )
+      );
+      // Update videoData in parent component
+
+      setVideoData(updatedVideo);
+      setEditedName(sanitizedName);
       toast.success("Video name updated successfully!");
     } catch (error) {
       console.error("Error updating video name:", error);
       toast.error("Failed to update video name");
-      setEditedName(videoData?.video?.name || "Untitled Video");
+      setEditedName(currentName);
     } finally {
       setIsUpdatingName(false);
+      setIsEditingName(false);
     }
   };
 
@@ -252,11 +278,10 @@ const PlayerDialog = ({
             <Button
               variant="ghost"
               size="sm"
-              className={`rounded-full ${
-                isFavorite
-                  ? "text-red-500 hover:text-red-600"
-                  : "text-gray-400 hover:text-red-500"
-              }`}
+              className={`rounded-full ${isFavorite
+                ? "text-red-500 hover:text-red-600"
+                : "text-gray-400 hover:text-red-500"
+                }`}
               onClick={toggleFavorite}
             >
               <Heart
@@ -533,9 +558,8 @@ const PlayerDialog = ({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={toggleFavorite}>
                         <Heart
-                          className={`h-4 w-4 mr-2 ${
-                            isFavorite ? "fill-current text-red-500" : ""
-                          }`}
+                          className={`h-4 w-4 mr-2 ${isFavorite ? "fill-current text-red-500" : ""
+                            }`}
                         />
                         {isFavorite
                           ? "Remove from Favorites"
@@ -570,7 +594,7 @@ const PlayerDialog = ({
               </div>
             </div>
           </div>
-      </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -37,8 +37,11 @@ const Dashboard = () => {
       handleCancelVideoPlayerCb,
       throttledFetch,
       getVideoData,
+      setVideoData,
+      setVideoList
     },
   ] = useVideoList();
+
 
   const replicate = new Replicate();
 
@@ -47,6 +50,18 @@ const Dashboard = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const searchParams = useSearchParams();
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400); // adjust delay as needed
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   // Handle shared video URL parameter
   useEffect(() => {
@@ -54,7 +69,7 @@ const Dashboard = () => {
     if (videoId && videoList.length > 0 && !openPlayDialog) {
       // Find the video in the list and open it
       const foundVideo = videoList.find(
-        (video) => video.id === parseInt(videoId)
+        ({video}) => video.id === parseInt(videoId)
       );
       if (foundVideo) {
         getVideoData(foundVideo.id);
@@ -69,12 +84,13 @@ const Dashboard = () => {
     let filtered = videoList;
 
     // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter((video) => {
+    if (debouncedSearchTerm) {
+      filtered = filtered.filter(({ video }) => {
+
         const nameMatch = video.name
           ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        const idMatch = video.id?.toString().includes(searchTerm);
+          .includes(debouncedSearchTerm.toLowerCase());
+        const idMatch = video.id?.toString().includes(debouncedSearchTerm);
 
         // Search through script content if it's an array
         let scriptMatch = false;
@@ -83,7 +99,7 @@ const Dashboard = () => {
             .map((segment) => segment.contentText || "")
             .join(" ")
             .toLowerCase();
-          scriptMatch = scriptText.includes(searchTerm.toLowerCase());
+          scriptMatch = scriptText.includes(debouncedSearchTerm.toLowerCase());
         }
 
         return nameMatch || idMatch || scriptMatch;
@@ -93,13 +109,13 @@ const Dashboard = () => {
     // Apply category filter
     if (filterBy !== "all") {
       // Add more filter logic based on your video properties
-      filtered = filtered.filter((video) => {
+      filtered = filtered.filter(({video, isFavorite}) => {
         switch (filterBy) {
           case "recent":
             const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
             return new Date(video.createdAt) > oneWeekAgo;
           case "favorites":
-            return video.isFavorite; // Assuming you have this property
+            return isFavorite; // Assuming you have this property
           case "shared":
             return video.isShared; // Assuming you have this property
           default:
@@ -110,20 +126,22 @@ const Dashboard = () => {
 
     // Apply sorting
     filtered.sort((a, b) => {
+      const { video: aVideo } = a;
+      const { video: bVideo } = b;
       switch (sortBy) {
         case "newest":
-          return new Date(b.createdAt) - new Date(a.createdAt);
+          return new Date(bVideo.createdAt) - new Date(aVideo.createdAt);
         case "oldest":
-          return new Date(a.createdAt) - new Date(b.createdAt);
+          return new Date(aVideo.createdAt) - new Date(bVideo.createdAt);
         case "name":
-          return (a.name || "").localeCompare(b.name || "");
+          return (aVideo.name || "").localeCompare(bVideo.name || "");
         default:
           return 0;
       }
     });
 
     return filtered;
-  }, [videoList, searchTerm, sortBy, filterBy]);
+  }, [videoList, debouncedSearchTerm, sortBy, filterBy]);
 
   if (isLoading && videoList.length === 0) {
     return <FullScreenLoader />;
@@ -191,11 +209,11 @@ const Dashboard = () => {
               <div>
                 <p className="text-2xl font-bold text-gray-900">
                   {
-                    videoList.filter((v) => {
+                    videoList.filter(({ video }) => {
                       const oneWeekAgo = new Date(
                         Date.now() - 7 * 24 * 60 * 60 * 1000
                       );
-                      return new Date(v.createdAt) > oneWeekAgo;
+                      return new Date(video.createdAt) > oneWeekAgo;
                     }).length
                   }
                 </p>
@@ -212,9 +230,9 @@ const Dashboard = () => {
               <div>
                 <p className="text-2xl font-bold text-gray-900">
                   {
-                    videoList.filter((v) => {
+                    videoList.filter(({video}) => {
                       const today = new Date();
-                      const videoDate = new Date(v.createdAt);
+                      const videoDate = new Date(video.createdAt);
                       return videoDate.toDateString() === today.toDateString();
                     }).length
                   }
@@ -365,6 +383,8 @@ const Dashboard = () => {
           isLoading={isLoading}
           getVideoData={getVideoData}
           viewMode={viewMode}
+          setVideoData={setVideoData}
+          setVideoList={setVideoList}
         />
       )}
     </div>
