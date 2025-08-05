@@ -78,3 +78,21 @@ export const Favorites = pgTable("favorites", {
   videoId: numeric("videoId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull()
 });
+
+export const UGCVideoMetadata = pgTable("ugcVideoMetadata", {
+  id: serial("id").primaryKey(),
+  videoId: numeric("videoId").notNull(), // FK to VideoData
+  avatarId: varchar("avatarId").notNull(),
+  avatarPersonality: varchar("avatarPersonality"),
+  productName: varchar("productName").notNull(),
+  productDescription: varchar("productDescription"),
+  productImageUrl: varchar("productImageUrl"),
+  tone: varchar("tone").default("excited"),
+  language: varchar("language").default("en"),
+  voiceStyle: varchar("voiceStyle").default("friendly"), // friendly, corporate, excited, serious
+  gestures: varchar("gestures").array(), // Available gestures used
+  hasProductIntegration: boolean("hasProductIntegration").default(false),
+  enhancementType: varchar("enhancementType").default("standard"), // standard, realistic_ugc_style
+  backgroundMusicUrl: varchar("backgroundMusicUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+});

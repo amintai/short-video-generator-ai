@@ -8,7 +8,7 @@ import { Users, VideoData } from "../../../../configs/schema";
 import toast from "react-hot-toast";
 import { eq } from "drizzle-orm";
 import { useDispatch, useSelector } from "react-redux";
-import { userDetails } from "../../../redux/sclices/counterSlice";
+import { userDetails } from "../../../redux/sclices/userDetailsSlice";
 import { generateSimpleVideoName } from "../../../../lib/videoUtils";
 
 const useCreateNewVideo = () => {

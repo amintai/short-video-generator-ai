@@ -6,7 +6,7 @@ import { Users } from "../configs/schema";
 import { useUser } from "@clerk/nextjs";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { userDetails } from "./redux/sclices/counterSlice";
+import { userDetails } from "./redux/sclices/userDetailsSlice";
 
 const Providers = ({ children }) => {
   const { user } = useUser();

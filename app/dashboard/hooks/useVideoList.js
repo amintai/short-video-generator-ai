@@ -6,6 +6,7 @@ import { eq, sql, leftJoin } from "drizzle-orm";
 import { throttle } from "lodash";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 
 const useVideoList = () => {
   const [videoList, setVideoList] = useState([]);
@@ -20,6 +21,8 @@ const useVideoList = () => {
   });
 
   const isFirstLoad = useRef(true);
+
+  const dispatch = useDispatch();
   const { user } = useUser();
 
 
@@ -69,6 +72,8 @@ const useVideoList = () => {
 
 
       setVideoList(result);
+
+
       setPagination((prev) => ({
         ...prev,
         page: 2, // Next page to load

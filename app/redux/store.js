@@ -1,8 +1,9 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
-import userReducer from './sclices/counterSlice';
+import userReducer from './sclices/userDetailsSlice';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
+import { videoListSlice } from './sclices/videoListSlice';
 
 const persistConfig = {
   key: 'root',
@@ -11,6 +12,7 @@ const persistConfig = {
 
 const reducers = combineReducers({
   user: userReducer,
+  videos: videoListSlice.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducers);

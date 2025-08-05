@@ -4,11 +4,11 @@ const initialState = {
   details: {}
 };
 
-export const counterSlice = createSlice({
-  name: 'counter',
+export const videoListSlice = createSlice({
+  name: 'videos',
   initialState,
   reducers: {
-    userDetails: (state, param) => {
+    videLists: (state, param) => {
       const { payload } = param;
 
       state.details = payload
@@ -17,7 +17,7 @@ export const counterSlice = createSlice({
 });
 
 // Export actions
-export const { userDetails } = counterSlice.actions;
+export const { videLists } = videoListSlice.actions;
 
 // Export reducer
-export default counterSlice.reducer;
+export default videoListSlice.reducer;

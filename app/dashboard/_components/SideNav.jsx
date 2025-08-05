@@ -25,12 +25,12 @@ import React, { useState } from "react";
 import { Badge } from "../../../@/components/ui/badge";
 import { Button } from "../../../@/components/ui/button";
 import { useSelector } from "react-redux";
+import { endOfWeek, isWithinInterval, startOfWeek } from "date-fns";
 
 const SideNav = ({ onClose }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const pathName = usePathname();
-  const coins = useSelector((state) => state.user.details.coins);
-  const isAdmin = useSelector((state) => state.user.details.role) === 'admin'; 
+  const isAdmin = useSelector((state) => state.user.details.role) === 'admin';
+  
 
   const Menu = [
     {
@@ -63,16 +63,25 @@ const SideNav = ({ onClose }) => {
     },
     {
       id: 4,
+      name: "UGC Video",
+      path: "/dashboard/ugc-video",
+      Icon: Users,
+      color: "from-violet-500 to-violet-600",
+      bgColor: "bg-violet-50",
+      description: "AI Avatar Videos",
+      badge: "New"
+    },
+    {
+      id: 5,
       name: "Templates",
       path: "/dashboard/templates",
       Icon: Palette,
       color: "from-emerald-500 to-emerald-600",
       bgColor: "bg-emerald-50",
-      description: "Video Templates",
-      badge: "New"
+      description: "Video Templates"
     },
     {
-      id: 5,
+      id: 6,
       name: "Analytics",
       path: "/dashboard/analytics",
       Icon: BarChart3,
@@ -98,7 +107,7 @@ const SideNav = ({ onClose }) => {
 
   const bottomMenu = [
     {
-      id: 6,
+      id: 10,
       name: "Upgrade Plan",
       path: "/dashboard/upgrade",
       Icon: Crown,
@@ -108,7 +117,7 @@ const SideNav = ({ onClose }) => {
       special: true
     },
     {
-      id: 7,
+      id: 11,
       name: "Settings",
       path: "/dashboard/settings",
       Icon: Settings,
@@ -117,7 +126,7 @@ const SideNav = ({ onClose }) => {
       description: "Account Settings"
     },
     {
-      id: 8,
+      id: 12,
       name: "Help & Support",
       path: "/dashboard/help",
       Icon: HelpCircle,
@@ -127,59 +136,67 @@ const SideNav = ({ onClose }) => {
     }
   ];
 
+
+  const now = new Date();
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday as start
+  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+
+  const weeklyVideos = [].filter((date) =>
+    isWithinInterval(new Date(date), { start: weekStart, end: weekEnd })
+  );
+
+  const weeklyCount = weeklyVideos.length;
+  const maxWeeklyGoal = 6; // Or make this configurable
+  const progressPercent = Math.min((weeklyCount / maxWeeklyGoal) * 100, 100);
+
+
   const MenuItem = ({ item, isActive }) => {
     const { Icon, name, path, color, bgColor, description, highlight, badge, special } = item;
-    
+
     return (
       <Link href={path}>
-        <div 
-          className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-pointer ${
-            isActive 
+        <div
+          className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-pointer ${isActive
               ? `bg-gradient-to-r ${color} text-white shadow-lg transform scale-105`
               : `hover:${bgColor} hover:scale-105 hover:shadow-md`
-          }`}
+            }`}
           onClick={onClose}
         >
           {/* Icon Container */}
-          <div className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${
-            isActive 
-              ? 'bg-white/20 text-white' 
+          <div className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${isActive
+              ? 'bg-white/20 text-white'
               : `bg-gradient-to-r ${color} text-white group-hover:scale-110 group-hover:rotate-3`
-          }`}>
+            }`}>
             <Icon className="h-5 w-5" />
             {highlight && !isActive && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
             )}
           </div>
-          
+
           {/* Text Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className={`font-semibold text-sm ${
-                isActive ? 'text-white' : 'text-gray-900'
-              }`}>
+              <span className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-gray-900'
+                }`}>
                 {name}
               </span>
               {badge && (
-                <Badge className={`text-xs px-2 py-0.5 ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-red-500 text-white'
-                }`}>
+                <Badge className={`text-xs px-2 py-0.5 ${isActive ? 'bg-white/20 text-white' : 'bg-red-500 text-white'
+                  }`}>
                   {badge}
                 </Badge>
               )}
               {special && (
-                <Sparkles className={`h-3 w-3 ${
-                  isActive ? 'text-white' : 'text-yellow-500'
-                } animate-pulse`} />
+                <Sparkles className={`h-3 w-3 ${isActive ? 'text-white' : 'text-yellow-500'
+                  } animate-pulse`} />
               )}
             </div>
-            <p className={`text-xs mt-0.5 ${
-              isActive ? 'text-white/80' : 'text-gray-500'
-            }`}>
+            <p className={`text-xs mt-0.5 ${isActive ? 'text-white/80' : 'text-gray-500'
+              }`}>
               {description}
             </p>
           </div>
-          
+
           {/* Active Indicator */}
           {isActive && (
             <div className="absolute right-3 w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -200,7 +217,7 @@ const SideNav = ({ onClose }) => {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-gray-200 rounded-full h-2">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style={{width: '75%'}}></div>
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
             </div>
             <span className="text-xs text-gray-600">75%</span>
           </div>
@@ -210,10 +227,10 @@ const SideNav = ({ onClose }) => {
         {/* Main Navigation */}
         <div className="space-y-2 mb-8">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Main</h3>
-{[...Menu, ...(isAdmin ? adminMenu : [])].map((item) => (
-            <MenuItem 
-              key={item.id} 
-              item={item} 
+          {[...Menu, ...(isAdmin ? adminMenu : [])].map((item) => (
+            <MenuItem
+              key={item.id}
+              item={item}
               isActive={pathName === item.path}
             />
           ))}
@@ -245,9 +262,9 @@ const SideNav = ({ onClose }) => {
         <div className="space-y-2">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Account</h3>
           {bottomMenu.map((item) => (
-            <MenuItem 
-              key={item.id} 
-              item={item} 
+            <MenuItem
+              key={item.id}
+              item={item}
               isActive={pathName === item.path}
             />
           ))}
