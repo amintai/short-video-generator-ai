@@ -5,6 +5,7 @@ import EmptyState from "./_components/EmptyState";
 import Link from "next/link";
 import VideoList from "./_components/VideoList";
 import FullScreenLoader from "./_components/FullScreenLoader";
+import Pagination from "./_components/Pagination";
 import useVideoList from "./hooks/useVideoList";
 import {
   Search,
@@ -34,11 +35,11 @@ import Replicate from "replicate";
 
 const Dashboard = () => {
   const [
-    { videoList, openPlayDialog, videoData, hasNext, isLoading },
+    { videoList, openPlayDialog, videoData, pagination, isLoading },
     {
       handleDeleteVideo,
       handleCancelVideoPlayerCb,
-      throttledFetch,
+      loadVideosForPage,
       getVideoData,
       setVideoData,
       setVideoList
@@ -203,21 +204,32 @@ const Dashboard = () => {
     }
     
     return (
-      <VideoList
-        videoList={filteredAndSortedVideos}
-        originalVideoList={videoList}
-        openPlayDialog={openPlayDialog}
-        videoData={videoData}
-        hasNext={hasNext}
-        handleDeleteVideo={handleDeleteVideo}
-        handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
-        getVideoList={throttledFetch}
-        isLoading={isLoading}
-        getVideoData={getVideoData}
-        viewMode={viewMode}
-        setVideoData={setVideoData}
-        setVideoList={setVideoList}
-      />
+      <div className="space-y-6">
+        <VideoList
+          videoList={filteredAndSortedVideos}
+          originalVideoList={videoList}
+          openPlayDialog={openPlayDialog}
+          videoData={videoData}
+          handleDeleteVideo={handleDeleteVideo}
+          handleCancelVideoPlayerCb={handleCancelVideoPlayerCb}
+          isLoading={isLoading}
+          getVideoData={getVideoData}
+          viewMode={viewMode}
+          setVideoData={setVideoData}
+          setVideoList={setVideoList}
+        />
+        
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={loadVideosForPage}
+            isLoading={isLoading}
+            className="mt-8"
+          />
+        )}
+      </div>
     );
   };
 

@@ -3,7 +3,6 @@ import { Thumbnail } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-import InfiniteScroll from "react-infinite-scroller";
 import useFavorites from "../hooks/useFavorites";
 import {
   Play,
@@ -39,8 +38,6 @@ const VideoList = ({
   videoData,
   handleDeleteVideo,
   handleCancelVideoPlayerCb,
-  getVideoList,
-  hasNext,
   getVideoData,
   isLoading,
   viewMode = "grid",
@@ -49,7 +46,6 @@ const VideoList = ({
 }) => {
   const ref = useRef();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [loadingMore, setLoadingMore] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, video: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -74,14 +70,6 @@ const VideoList = ({
 
   const handleDeleteCancel = () => {
     setDeleteDialog({ isOpen: false, video: null });
-  };
-
-  const handleLoadMore = async () => {
-    if (!loadingMore && hasNext) {
-      setLoadingMore(true);
-      await getVideoList();
-      setLoadingMore(false);
-    }
   };
 
 
@@ -584,36 +572,23 @@ const VideoList = ({
 
   return (
     <>
-      <InfiniteScroll
-        pageStart={0}
-        loadMore={handleLoadMore}
-        hasMore={hasNext && !loadingMore}
-        loader={
-          <div className="flex justify-center items-center py-8" key="loader">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Loading more videos...</span>
-          </div>
-        }
-        threshold={250}
-      >
-        {viewMode === "grid" ? (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {videoList.map((item, index) => (
-              <VideoCard
-                key={`${item?.video?.id}-${index}`}
-                item={item}
-                index={index}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {videoList.map((item, index) => (
-              <ListItem key={`${item.video.id}-${index}`} item={item} index={index} />
-            ))}
-          </div>
-        )}
-      </InfiniteScroll>
+      {viewMode === "grid" ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {videoList.map((item, index) => (
+            <VideoCard
+              key={`${item?.video?.id}-${index}`}
+              item={item}
+              index={index}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {videoList.map((item, index) => (
+            <ListItem key={`${item.video.id}-${index}`} item={item} index={index} />
+          ))}
+        </div>
+      )}
 
       {openPlayDialog && (
         <PlayerDialog

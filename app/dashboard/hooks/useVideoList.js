@@ -14,9 +14,8 @@ const useVideoList = () => {
   const [openPlayDialog, setOpenPlayDialog] = useState(false);
   const [videoData, setVideoData] = useState();
   const [pagination, setPagination] = useState({
-    page: 1,
-    perPage: 6,
-    hasNext: true,
+    currentPage: 1,
+    perPage: 12,
     isInitialized: false,
   });
 
@@ -46,13 +45,13 @@ const useVideoList = () => {
     setLoading(true);
     setPagination((prev) => ({
       ...prev,
-      page: 1,
-      hasNext: true,
+      currentPage: 1,
       isInitialized: false,
     }));
     setVideoList([]);
 
     try {
+      // Get all videos
       const result = await db
         .select({
           video: VideoData,
@@ -66,18 +65,13 @@ const useVideoList = () => {
           Favorites,
           sql`${VideoData.id} = ${Favorites.videoId} AND ${Favorites.userEmail} = ${user.primaryEmailAddress.emailAddress}`
         )
-        .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress))
-        .limit(pagination.perPage)
-        .offset(0);
-
+        .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress));
 
       setVideoList(result);
 
-
       setPagination((prev) => ({
         ...prev,
-        page: 2, // Next page to load
-        hasNext: result.length === pagination.perPage,
+        currentPage: 1,
         isInitialized: true,
       }));
     } catch (error) {
@@ -102,60 +96,12 @@ const useVideoList = () => {
     setVideoData(null);
   };
 
-  const loadMoreVideos = async () => {
-    setLoading(true);
-    try {
-      const currentPage = pagination.page;
-
-      const result = await db
-        .select({
-          video: VideoData,
-          isFavorite: sql`CASE WHEN ${Favorites.id} IS NOT NULL THEN true ELSE false END`.as("isFavorite"),
-        })
-        .from(VideoData)
-        .leftJoin(
-          Favorites,
-          sql`${VideoData.id} = ${Favorites.videoId} AND ${Favorites.userEmail} = ${user.primaryEmailAddress.emailAddress}`
-        )
-        .where(eq(VideoData.createdBy, user.primaryEmailAddress.emailAddress))
-        .limit(pagination.perPage)
-        .offset((currentPage - 1) * pagination.perPage);
-
-      if (result.length === 0) {
-        setPagination((prev) => ({ ...prev, hasNext: false }));
-        return;
-      }
-
-      // ✅ De-duplicate using Set
-      setVideoList((prev) => {
-        const existingIds = new Set(prev.map((v) => v.video.id));
-        const uniqueNew = result.filter((v) => !existingIds.has(v.video.id));
-        return [...prev, ...uniqueNew];
-      });
-
-      setPagination((prev) => ({
-        ...prev,
-        page: prev.page + 1,
-        hasNext: result.length === pagination.perPage,
-      }));
-    } catch (error) {
-      console.error("Error loading more videos:", error);
-      toast.error("Failed to load more videos");
-    } finally {
-      setLoading(false);
-    }
+  const setCurrentPage = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: page,
+    }));
   };
-
-
-  const throttledFetch = useCallback(
-    throttle(() => {
-      if (pagination.hasNext && pagination.isInitialized && !isLoading) {
-        loadMoreVideos();
-      }
-    }, 1000),
-    [pagination.hasNext, pagination.isInitialized, isLoading]
-  );
-
 
 
   const handleDeleteVideo = async (videoToDelete) => {
@@ -194,12 +140,12 @@ const useVideoList = () => {
       isLoading,
       openPlayDialog,
       videoData,
-      hasNext: pagination.hasNext,
+      pagination,
     },
     {
       handleDeleteVideo,
       handleCancelVideoPlayerCb,
-      throttledFetch,
+      setCurrentPage,
       getVideoData,
       refreshVideoList,
       setVideoData,

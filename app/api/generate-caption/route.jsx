@@ -15,8 +15,11 @@ export async function POST(req) {
       audio: FILE_URL,
     };
 
+
+
     const transcript = await client.transcripts.transcribe(config);
 
+    console.log("transcript",transcript)
     return NextResponse.json({
       result: transcript.words,
     });

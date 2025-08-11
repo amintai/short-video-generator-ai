@@ -3,13 +3,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(req) {
   try {
-    const { 
-      productName, 
-      productDescription, 
-      tone, 
-      language, 
+    const {
+      productName,
+      productDescription,
+      tone,
+      language,
       avatarPersonality,
-      voiceStyle 
+      voiceStyle
     } = await req.json();
 
     if (!productName || !productDescription) {
@@ -20,8 +20,8 @@ export async function POST(req) {
     }
 
     // Initialize Gemini AI
-    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     // Create enhanced script prompt
     const enhancementPrompt = `
@@ -41,7 +41,7 @@ Requirements:
 3. Add personal touch and relatable language
 4. Include social proof elements
 5. End with a clear call-to-action
-6. Keep it between 25-30 seconds when spoken
+6. Keep it between 30-50 seconds when spoken
 7. Use ${tone} tone throughout
 8. Match the ${voiceStyle} voice style
 9. Make it suitable for ${avatarPersonality} personality
@@ -61,10 +61,28 @@ Return the script as a JSON array with objects containing:
 Make it conversational, authentic, and compelling for ${language} speakers.
 `;
 
+
+    const generationConfig = {
+      temperature: 1,
+      topP: 0.95,
+      topK: 40,
+      maxOutputTokens: 1024,
+      responseMimeType: "application/json",
+    };
+
     // Generate enhanced script
-    const result = await model.generateContent(enhancementPrompt);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: enhancementPrompt }] }],
+      generationConfig
+    });
+
+
+
+    console.log("result", result)
     const response = await result.response;
-    const scriptText = response.text();
+    let scriptText = response.text();
+
+    scriptText = scriptText.replace(/```json|```/g, "").trim();
 
     // Parse the response and structure it
     let enhancedScript;
@@ -92,7 +110,7 @@ Make it conversational, authentic, and compelling for ${language} speakers.
 
   } catch (error) {
     console.error("Script enhancement error:", error);
-    
+
     // Fallback to basic enhancement if AI fails
     const fallbackScript = createFallbackScript(
       req.body?.productName || "Product",
@@ -113,23 +131,23 @@ Make it conversational, authentic, and compelling for ${language} speakers.
 function createStructuredScript(scriptText, tone, personality) {
   const sentences = scriptText.split(/[.!?]+/).filter(s => s.trim().length > 0);
   const segments = [];
-  
+
   // Distribute sentences across segments
   const segmentCount = Math.min(5, Math.max(3, sentences.length));
   const sentencesPerSegment = Math.ceil(sentences.length / segmentCount);
-  
+
   for (let i = 0; i < segmentCount; i++) {
     const startIdx = i * sentencesPerSegment;
     const endIdx = Math.min(startIdx + sentencesPerSegment, sentences.length);
     const segmentText = sentences.slice(startIdx, endIdx).join('. ').trim() + '.';
-    
+
     segments.push({
       contentText: segmentText,
       duration: Math.max(3, Math.min(8, segmentText.length / 15)), // Rough estimation
       scene: getSceneDescription(i, segmentCount, personality)
     });
   }
-  
+
   return segments;
 }
 
@@ -142,7 +160,7 @@ function getSceneDescription(segmentIndex, totalSegments, personality) {
     `Avatar showing results/benefits with satisfied expression`,
     `Avatar with call-to-action pose, encouraging viewer to act`
   ];
-  
+
   return scenes[Math.min(segmentIndex, scenes.length - 1)];
 }
 
