@@ -8,6 +8,7 @@ import { store } from "./redux/store";
 import { Toaster } from "react-hot-toast";
 import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
+import { Analytics } from "@vercel/analytics/next"
 
 // export const metadata = {
 //   title: "AI Short Video Generator",
@@ -36,6 +37,7 @@ export default function RootLayout({ children }) {
             <ClerkProvider publishableKey={publishableKey}>
               <Providers>{children}</Providers>
               <Toaster />
+              <Analytics />
             </ClerkProvider>
           </PersistGate>
         </body>

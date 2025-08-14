@@ -27,6 +27,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@remotion/cli": "4.0.251",
     "@stripe/stripe-js": "^7.4.0",
+    "@vercel/analytics": "^1.5.0",
     "assemblyai": "^4.8.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
