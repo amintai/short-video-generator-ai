@@ -42,7 +42,24 @@ export const VideoData = pgTable("videoData", {
   status: varchar("status").default("completed"), // processing, completed, failed
   tags: varchar("tags").array(),
   category: varchar("category"),
-  isShared: boolean("isShared").default(false)
+  isShared: boolean("isShared").default(false),
+  
+  // Enhanced video generation options
+  topic: varchar("topic"),
+  imageStyle: varchar("imageStyle"),
+  language: varchar("language").default("en"),
+  voiceStyle: varchar("voiceStyle"),
+  voiceName: varchar("voiceName"),
+  transitionStyle: varchar("transitionStyle"),
+  visualEffects: json("visualEffects"), // Array of applied effects
+  contentType: varchar("contentType"), // AI Story, Horror, etc.
+  mood: varchar("mood"), // energetic, calm, professional
+  targetAudience: varchar("targetAudience"), // general, kids, business
+  backgroundColor: varchar("backgroundColor"),
+  textStyle: json("textStyle"), // font, color, size settings
+  musicUrl: varchar("musicUrl"),
+  musicVolume: numeric("musicVolume").default(0.5),
+  generationSettings: json("generationSettings") // All form settings for regeneration
 });
 
 export const VideoAnalytics = pgTable("videoAnalytics", {

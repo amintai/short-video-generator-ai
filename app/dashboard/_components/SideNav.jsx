@@ -250,7 +250,7 @@ const SideNav = ({ onClose }) => {
               </Button>
             </Link>
             <Link href="/dashboard/templates">
-              <Button variant="outline" className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl text-sm py-2">
+              <Button variant="outline" className="w-full border-gray-200 text-white-700 mt-4 rounded-xl text-sm py-2">
                 <Palette className="h-4 w-4 mr-2" />
                 Browse Templates
               </Button>
