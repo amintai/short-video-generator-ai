@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "../../../configs/db";
-import { VideoData } from "../../../configs/schema";
 import { currentUser } from "@clerk/nextjs";
+import { db } from "../../../../configs/db";
+import { VideoData } from "../../../../configs/schema";
 
 export async function POST(req) {
   try {

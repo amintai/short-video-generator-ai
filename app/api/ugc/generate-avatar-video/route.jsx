@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
-import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "../../../../configs/firebaseConfig";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,

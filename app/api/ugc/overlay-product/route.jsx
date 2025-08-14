@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { storage } from "../../../configs/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export async function POST(req) {
