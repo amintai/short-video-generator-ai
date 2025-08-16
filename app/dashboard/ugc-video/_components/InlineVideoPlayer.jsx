@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../../../../@/components/ui/button";
 import { Download, RefreshCw, Play, Pause, Share2, Copy, Check, Sparkles } from "lucide-react";
+import SocialShareButton from "../../../../components/SocialShareButton";
 import { Player } from "@remotion/player";
 import RemotionVideo from "../../_components/RemotionVideo";
 import toast from "react-hot-toast";
@@ -12,11 +13,11 @@ const InlineVideoPlayer = ({ videoData, isLoading, onReset }) => {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
-    // Try videoUrl first, then audioFileUrl as fallback
-    const downloadUrl = videoData?.video?.videoUrl || videoData?.video?.audioFileUrl;
+    // Only allow downloading the actual video, not audio fallback
+    const downloadUrl = videoData?.video?.videoUrl;
     
     if (!downloadUrl) {
-      toast.error('Video URL not available');
+      toast.error('Video is not ready for download. Please wait for video generation to complete.');
       return;
     }
 
@@ -171,6 +172,8 @@ const InlineVideoPlayer = ({ videoData, isLoading, onReset }) => {
     );
   }
 
+  console.log('videoData',videoData)
+  
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -243,7 +246,7 @@ const InlineVideoPlayer = ({ videoData, isLoading, onReset }) => {
         <div className="flex gap-3">
           <Button 
             onClick={handleDownload}
-            disabled={isDownloading}
+            disabled={isDownloading || !videoData?.video?.videoUrl}
             className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white rounded-xl disabled:opacity-50 h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <Download className="h-5 w-5 mr-2" />
@@ -268,15 +271,14 @@ const InlineVideoPlayer = ({ videoData, isLoading, onReset }) => {
         
         {/* Secondary Actions */}
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="flex-1 rounded-xl border-gray-200 hover:bg-gray-50 h-10" 
-            onClick={handleShare}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
+          <SocialShareButton 
+            videoData={{
+              videoUrl: videoData?.video?.videoUrl || '',
+              name: videoData?.video?.name || 'UGC Video',
+              description: `Amazing UGC advertisement created with AI! Check out this ${videoData?.video?.name || 'video'}.`
+            }}
+            className="flex-1 rounded-xl h-10"
+          />
           <Button 
             size="sm" 
             variant="outline" 
