@@ -96,6 +96,24 @@ const useCreateNewVideo = () => {
           captions: videoData?.captions,
           imageList: videoData?.imageList,
           createdBy: user?.primaryEmailAddress.emailAddress,
+          
+          // Enhanced video generation options
+          topic: formData.topic,
+          imageStyle: formData.imageStyle,
+          language: formData.language || "en",
+          voiceStyle: formData.voiceStyle,
+          voiceName: formData.voiceName,
+          transitionStyle: formData.transitionStyle,
+          duration: formData.duration || 30,
+          contentType: formData.contentType,
+          mood: formData.mood,
+          targetAudience: formData.targetAudience,
+          backgroundColor: formData.backgroundColor,
+          textStyle: formData.textStyle,
+          musicUrl: formData.musicUrl,
+          musicVolume: formData.musicVolume || 0.5,
+          visualEffects: formData.visualEffects || [],
+          generationSettings: formData // Store all form settings for regeneration
         })
         .returning({
           id: VideoData.id,
@@ -183,8 +201,10 @@ Ensure every image prompt clearly reflects and enriches its corresponding narrat
     const res = await axios.post("/api/generate-audio", {
       text: script,
       id: id,
-      language: formData.language,
+      language: formData.language || "en",
       contentType: formData.contentType,
+      voiceName: formData.voiceName,
+      voiceStyle: formData.voiceStyle,
       timeout: 30000,
     });
 
