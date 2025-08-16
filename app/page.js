@@ -6,6 +6,8 @@ import TestimonialsSection from "./_components/TestimonialsSection";
 import PricingSection from "./_components/PricingSection";
 import CTASection from "./_components/CTASection";
 import Footer from "./_components/Footer";
+import PricingSectionTemp from "./_components/PricingSectionTemp";
+import CommunitySection from './_components/CommunitySection';
 
 export default function Home() {
   return (
@@ -13,8 +15,11 @@ export default function Home() {
       <HomePageHeader />
       <HeroSection />
       <FeaturesSection />
-      <TestimonialsSection />
-      <PricingSection />
+
+      <CommunitySection />
+      {/* <TestimonialsSection /> */}
+      {/* <PricingSection /> */}
+      <PricingSectionTemp />
       <CTASection />
       <Footer />
     </div>

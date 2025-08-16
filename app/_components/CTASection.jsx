@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button } from "../../@/components/ui/button";
+import FoundingMemberModal from './FoundingMemberModal';
 import { ArrowRight, Play, Sparkles, Video, Zap, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -20,23 +21,23 @@ const CTASection = () => {
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2 mb-8">
             <Sparkles className="h-4 w-4 text-white" />
             <span className="text-sm font-medium text-white">
-              Join 10,000+ Creators
+              Early Access • Building in Public
             </span>
           </div>
 
           {/* Main Heading */}
           <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Ready to Create Your First{" "}
+            Be Part of the{" "}
             <span className="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-              AI Video
+              First 100 Creators
             </span>
-            ?
           </h2>
 
           {/* Subheading */}
           <p className="text-lg lg:text-xl text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of creators who are already using VideoAI to transform their content. 
-            Start your free trial today and experience the future of video creation.
+            This isn’t another polished SaaS with fake stats. We’re in early
+            days, building this AI video platform alongside a small group of
+            creators. Join now, try it free, and shape what gets built next.
           </p>
 
           {/* CTA Buttons */}
@@ -45,50 +46,50 @@ const CTASection = () => {
               onClick={() => redirect("/sign-up")}
               className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-8 py-4 rounded-full text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Start Creating Free
+              Join the Beta
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button
               variant="outline"
-              className="border-2 border-white/50 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-full text-lg transition-all duration-200 backdrop-blur-sm"
+              className="border-2 border-white/50 text-black hover:bg-white/10 hover:text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-200 backdrop-blur-sm"
             >
               <Play className="mr-2 h-5 w-5" />
               Watch Demo
             </Button>
           </div>
 
-          {/* Stats Grid */}
+          {/* Roadmap Highlights Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Video className="h-8 w-8 text-white" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">10K+</div>
-              <div className="text-sm text-white/80">Videos Created</div>
+              <div className="text-lg font-semibold text-white mb-1">✅ MVP Live</div>
+              <div className="text-sm text-white/80">Basic video generation</div>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-white" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">5K+</div>
-              <div className="text-sm text-white/80">Happy Users</div>
+              <div className="text-lg font-semibold text-white mb-1">🚀 Coming Soon</div>
+              <div className="text-sm text-white/80">Auto captions & templates</div>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-8 w-8 text-white" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">2 Min</div>
-              <div className="text-sm text-white/80">Average Time</div>
+              <div className="text-lg font-semibold text-white mb-1">🛠️ In Progress</div>
+              <div className="text-sm text-white/80">Faster rendering</div>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">4.9★</div>
-              <div className="text-sm text-white/80">User Rating</div>
+              <div className="text-lg font-semibold text-white mb-1">🌍 Next</div>
+              <div className="text-sm text-white/80">Public launch</div>
             </div>
           </div>
 
@@ -101,7 +102,7 @@ const CTASection = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-sm">14-day free trial</span>
+                <span className="text-sm">Free beta access</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>

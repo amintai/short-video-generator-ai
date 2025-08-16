@@ -111,21 +111,27 @@ The platform uses a **coin-based monetization model**, allowing flexibility for 
 
 ## 🧑‍💻 Getting Started
 
-```bash
 # 1. Clone the repo
+```bash
 git clone https://github.com/amintai/short-video-generator-ai.git
 cd short-video-generator-ai
+```
 
 # 2. Install dependencies
+```
 npm install
+```
 
 # 3. Setup environment variables
+```
 cp .env.example .env
+```
 # Fill in API keys for Firebase, Gemini, Google TTS, AssemblyAI, etc.
 
 # 4. Run the dev server
+```
 npm run dev
-
+```
 
 ---
 
